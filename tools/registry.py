@@ -12,3 +12,8 @@ class ToolRegistry:
         if name not in self.tools:
             raise ValueError(f"Unknown tool: {name}")
         return self.tools[name].execute(arguments)
+    
+    def format_call(self, name: str, arguments: Dict, result: str):
+        if name not in self.tools:
+            raise ValueError(f"Unknown tool: {name}")
+        return self.tools[name].format_call(json_parsed=arguments, result=result)
