@@ -16,6 +16,9 @@ After the response completes, the prompt appears again.
 
 import argparse
 import sys
+import json
+from tools.time_tool import TimeTool
+from tools.registry import ToolRegistry
 # Load YAML configuration. The PyYAML package is required.
 try:
     import yaml
@@ -179,7 +182,7 @@ def reconstruct_chat_completion(message, chunk):
 
     return message
 
-def stream_chat(messages, cfg):
+def stream_chat(messages, cfg, tool_registry):
     
     # Initialise the OpenAI client with the provided base URL and API key.
     client = OpenAI(
@@ -202,6 +205,7 @@ def stream_chat(messages, cfg):
     response = client.chat.completions.create(
         model=cfg.get("model"),
         messages=messages,
+        tools=tool_registry.get_openai_tools(),
         stream=True,
         n=1
     )
@@ -276,19 +280,25 @@ def main() -> None:
     # Initialise the conversation with the system prompt.
     conversation = [{"role": "system", "content": cfg["system_prompt"]}]
 
+    tool_registry = ToolRegistry([
+       TimeTool(),
+    ])
+
+    user_conversation = True
     while True:
-        user_msg = get_user_input()
-        if user_msg.strip().lower() in {"exit", "quit", "/quit"}:
-            print("Exiting chat.")
-            break
-        if not user_msg:
-            # Empty input – just continue prompting.
-            continue
-        conversation.append({"role": "user", "content": user_msg})
+        if user_conversation: 
+            user_msg = get_user_input()
+            if user_msg.strip().lower() in {"exit", "quit", "/quit"}:
+                print("Exiting chat.")
+                break
+            if not user_msg:
+                # Empty input – just continue prompting.
+                continue
+            conversation.append({"role": "user", "content": user_msg})
         # Stream assistant response.
         gotError = False
         try:
-            message = stream_chat(conversation, cfg)
+            message = stream_chat(conversation, cfg, tool_registry=tool_registry)
             validate_message(message=message)
         except Exception as e:
             gotError = True
@@ -297,23 +307,38 @@ def main() -> None:
         if not gotError:    
             if (message["finish_reason"] == 'stop' or message["finish_reason"] == 'length'):
                 append_message_to_conversation(conversation=conversation, message=message)
+                user_conversation = True
             elif(message["finish_reason"] == 'content_filter'):
                 print("The input has been rejected due to content filter. The response has been discarded")
+                user_conversation =  True
             elif (message["finish_reason"] == 'function_call'):
                 print("Function calls not supported yet. The response has been discarded")
+                user_conversation =  True
             elif (message["finish_reason"] == 'tool_calls'):
-                print("Tool calls not supported yet. The response has been discarded")   
-            
+                user_conversation =  False
+                append_message_to_conversation(conversation, message)
+                for tool_call in message["tool_calls"]:
+                    name = tool_call["function"]["name"]
+                    args_str = tool_call["function"]["arguments"]
 
-     
+                    try:
+                        args = json.loads(args_str) if args_str else {}
+                    except json.JSONDecodeError:
+                        args = {}
 
+                    print(f"\n[Executing tool: {name} with args {args}]")
 
+                    try:
+                        result = tool_registry.execute(name, args)
+                    except Exception as e:
+                        result = f"ERROR: {e}"
 
-        
-        
-       
-        
+                    conversation.append({
+                        "role": "tool",
+                        "tool_call_id": tool_call["id"],
+                        "content": result,
+                    })
 
-
+                        
 if __name__ == "__main__":
     main()
