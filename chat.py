@@ -281,11 +281,25 @@ def main() -> None:
     # Initialise the conversation with the system prompt.
     conversation = [{"role": "system", "content": cfg["system_prompt"]}]
 
-    tool_registry = ToolRegistry([
-       TimeTool(),
-       PythonExecTool(),
+    #Tools initializing
+    all_tools = [TimeTool(), PythonExecTool()]
+    tools = [];
+    if ("tools" in cfg):
+      names = cfg.get("tools")
+      for tool in all_tools:
+         name = tool.name()
+         if name in names:
+             tools.append(tool)
+           
+    else:
+      tools = all_tools  
 
-    ])
+    tool_registry = ToolRegistry(tools)
+    print("INSTALLED TOOLS: ", end="")
+    for tool in tools:
+      print(tool.name()+" ")
+    print()  
+
 
     user_conversation = True
     while True:
