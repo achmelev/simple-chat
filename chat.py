@@ -208,7 +208,8 @@ def stream_chat(messages, cfg, tool_registry):
         messages=messages,
         tools=tool_registry.get_openai_tools(),
         stream=True,
-        n=1
+        n=1,
+        reasoning_effort=cfg.get("reasoning_effort","medium"), 
     )
     
 
