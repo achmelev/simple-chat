@@ -18,6 +18,7 @@ import argparse
 import sys
 import json
 from tools.time_tool import TimeTool
+from tools.python_exec_tool import PythonExecTool
 from tools.registry import ToolRegistry
 # Load YAML configuration. The PyYAML package is required.
 try:
@@ -282,6 +283,8 @@ def main() -> None:
 
     tool_registry = ToolRegistry([
        TimeTool(),
+       PythonExecTool(),
+
     ])
 
     user_conversation = True
