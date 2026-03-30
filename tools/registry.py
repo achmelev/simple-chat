@@ -16,4 +16,4 @@ class ToolRegistry:
     def format_call(self, name: str, arguments: Dict, result: str):
         if name not in self.tools:
             raise ValueError(f"Unknown tool: {name}")
-        return self.tools[name].format_call(json_parsed=arguments, result=result)
+        return self.tools[name].format_call(arguments=arguments, result=result)

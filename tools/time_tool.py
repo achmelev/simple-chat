@@ -5,6 +5,7 @@ from timezonefinder import TimezoneFinder
 from tools.base import Tool
 import ssl
 import certifi
+import json
 
 ssl_context = ssl.create_default_context(cafile=certifi.where())
 
@@ -82,3 +83,9 @@ class TimeTool(Tool):
             return f"ERROR: Failed to get time: {e}"
 
         return f"Current time in {city.title()} is {now.strftime('%Y-%m-%d %H:%M:%S')}"
+
+    def format_call(self, arguments, result):
+        input = arguments.get("location", "").strip()
+        if not input:
+            input=json.dumps(arguments, indent=4)   
+        return self.create_tool_call_string(input, result)    
