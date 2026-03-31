@@ -91,26 +91,30 @@ def validate_and_set_unique_field(message, name, value):
     elif not value:
         pass
     else:
-        raise ResponseValidationError("Expected unique value for "+name+" but got at least two different values")
+        raise ResponseValidationError("Expected unique value for "+name+" but got at least two different values: ", message[name], "!=", value)
 
         
 
-def reconstruct_chat_completion(message, chunk):
+def reconstruct_chat_completion(message, chunk, cfg):
+
+    #print(chunk)
 
      # -- Id ---
     validate_and_set_unique_field(message=message, name="id", value=chunk.id)
 
     if not chunk.choices:
-       raise ResponseValidationError("Got not choices in a chunk") 
+       return False
     
     if (len(chunk.choices) != 1):
-        raise ResponseValidationError("Got "+len(chunk.choices)+" choices in a chunk")
+       return False
     
     choice = chunk.choices[0]
 
     if not choice.delta:
         raise ResponseValidationError("Got no delta in a chunk choice")
     delta = choice.delta
+
+    reasoning_field = cfg.get("reasoning_field", "reasoning_content")
 
     # ---- role ----
     validate_and_set_unique_field(message=message, name="role", value=delta.role)
@@ -119,8 +123,8 @@ def reconstruct_chat_completion(message, chunk):
         content_token = trim_to_none(delta.content)
     else:
         content_token = None
-    if hasattr(delta, "reasoning_content"):
-        reasoning_content_token = trim_to_none(delta.reasoning_content)
+    if hasattr(delta, reasoning_field):
+        reasoning_content_token = trim_to_none(getattr(delta, reasoning_field))
     else:
         reasoning_content_token = None    
     message["content_token"] = content_token
@@ -182,7 +186,7 @@ def reconstruct_chat_completion(message, chunk):
     # ---- finish reason ----
     validate_and_set_unique_field(message=message, name="finish_reason", value=choice.finish_reason)
 
-    return message
+    return True
 
 def stream_chat(messages, cfg, tool_registry):
     
@@ -227,7 +231,8 @@ def stream_chat(messages, cfg, tool_registry):
     in_reasoning = False
 
     for chunk in response:
-        reconstruct_chat_completion(message=message, chunk=chunk)
+        if not reconstruct_chat_completion(message=message, chunk=chunk, cfg=cfg):
+            continue
         #print(str(message["reasoning_content_token"])+":"+str(message["content_token"]))
         if (in_reasoning):
             if message["reasoning_content_token"]:
