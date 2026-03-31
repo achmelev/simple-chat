@@ -112,13 +112,17 @@ def reconstruct_chat_completion(message, chunk):
         raise ResponseValidationError("Got no delta in a chunk choice")
     delta = choice.delta
 
-   
-
     # ---- role ----
     validate_and_set_unique_field(message=message, name="role", value=delta.role)
 
-    content_token = trim_to_none(delta.content)
-    reasoning_content_token = trim_to_none(delta.reasoning_content)
+    if hasattr(delta, "content"):
+        content_token = trim_to_none(delta.content)
+    else:
+        content_token = None
+    if hasattr(delta, "reasoning_content"):
+        reasoning_content_token = trim_to_none(delta.reasoning_content)
+    else:
+        reasoning_content_token = None    
     message["content_token"] = content_token
     message["reasoning_content_token"] = reasoning_content_token
 
@@ -200,14 +204,24 @@ def stream_chat(messages, cfg, tool_registry):
     }
 
     # Request a streaming response using the new SDK syntax.
-    response = client.chat.completions.create(
-        model=cfg.get("model"),
-        messages=messages,
-        tools=tool_registry.get_openai_tools(),
-        stream=True,
-        n=1,
-        reasoning_effort=cfg.get("reasoning_effort","medium"), 
-    )
+    if ("reasoning_effort" in cfg):
+        response = client.chat.completions.create(
+            model=cfg.get("model"),
+            messages=messages,
+            tools=tool_registry.get_openai_tools(),
+            stream=True,
+            n=1,
+            reasoning_effort=cfg.get("reasoning_effort") 
+        )
+    else:
+       response = client.chat.completions.create(
+            model=cfg.get("model"),
+            messages=messages,
+            tools=tool_registry.get_openai_tools(),
+            stream=True,
+            n=1
+        ) 
+            
     
 
     in_reasoning = False
@@ -252,13 +266,18 @@ def validate_message(message):
         
      
 def append_message_to_conversation(conversation, message):
-    conversation.append({
-        "role": message["role"],
-        "content": message["content"],
-        "reasoning_content": message["reasoning_content"],
-        "tool_calls": message["tool_calls"],
-        "function_call": message["function_call"],
-    })
+    to_append = {}
+    to_append["role"] =  message["role"]
+    to_append["content"] =  message["content"]
+    if message["reasoning_content"]:
+        to_append["reasoning_content"] =  message["reasoning_content"]
+    if message["function_call"]:
+        to_append["function_call"] =  message["function_call"]
+    if message["tool_calls"]:
+        if (len(message["tool_calls"])>0):
+            to_append["tool_calls"] = message["tool_calls"]
+    conversation.append(to_append)        
+
 
 
 def main() -> None:
