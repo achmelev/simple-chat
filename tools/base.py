@@ -8,6 +8,14 @@ class Tool(ABC):
         """Unique tool name (used by LLM)"""
         pass
 
+    def set_up(self) -> str:
+        """Tool setup"""
+        pass
+
+    def shut_down(self) -> str:
+        """Tool shutdown"""
+        pass
+
     @abstractmethod
     def description(self) -> str:
         """Human-readable description"""
