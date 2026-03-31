@@ -284,22 +284,8 @@ def main() -> None:
 
     #Tools initializing
     all_tools = [TimeTool(), PythonExecTool()]
-    tools = [];
-    if ("tools" in cfg):
-      names = cfg.get("tools")
-      for tool in all_tools:
-         name = tool.name()
-         if name in names:
-             tools.append(tool)
-           
-    else:
-      tools = all_tools  
-
-    tool_registry = ToolRegistry(tools)
-    print("INSTALLED TOOLS: ", end="")
-    for tool in tools:
-      print(tool.name()+" ")
-    print()  
+    tool_names = cfg.get("tools", None)
+    tool_registry = ToolRegistry(all_tools=all_tools, tool_names=tool_names) 
 
 
     user_conversation = True
@@ -308,6 +294,7 @@ def main() -> None:
             user_msg = get_user_input()
             if user_msg.strip().lower() in {"exit", "quit", "/quit"}:
                 print("Exiting chat.")
+                tool_registry.shut_down()
                 break
             if not user_msg:
                 # Empty input – just continue prompting.
