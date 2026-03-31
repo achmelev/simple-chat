@@ -44,19 +44,17 @@ except ImportError as e:
 def load_config(path):
     """Load YAML configuration.
 
-    The configuration must contain ``llm_url``, ``api_key`` and ``system_prompt``.
+    The configuration must contain ``llm_url``, ``api_key``,  ``system_prompt`` and ``model``.
     ``model`` is optional – if omitted ``gpt-3.5-turbo`` is used.
     """
     if not os.path.isfile(path):
         raise FileNotFoundError(f"Config file not found: {path}")
     with open(path, "r", encoding="utf-8") as f:
         cfg = yaml.safe_load(f) or {}
-    required = ["llm_url", "api_key", "system_prompt"]
+    required = ["llm_url", "api_key", "system_prompt", "model"]
     missing = [k for k in required if k not in cfg]
     if missing:
         raise ValueError(f"Missing required config keys: {', '.join(missing)}")
-    # Provide a default model if not specified in the config.
-    cfg.setdefault("model", "gpt-3.5-turbo")
     return cfg
 
 def trim_to_none(value):
