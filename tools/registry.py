@@ -43,3 +43,14 @@ class ToolRegistry:
             except Exception as e:
                 print(f"Tool shutdown failed: {tool.name()} -> {e}")
 
+    def reset(self):
+        for tool in self.tools.values():
+            try:
+                print(tool.shut_down())
+            except Exception as e:
+                print(f"Tool shutdown failed: {tool.name()} -> {e}")  
+            try:
+                print(tool.set_up())
+            except Exception as e:
+                print(f"Tool setup failed: {tool.name()} -> {e}")               
+

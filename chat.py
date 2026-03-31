@@ -45,7 +45,6 @@ def load_config(path):
     """Load YAML configuration.
 
     The configuration must contain ``llm_url``, ``api_key``,  ``system_prompt`` and ``model``.
-    ``model`` is optional – if omitted ``gpt-3.5-turbo`` is used.
     """
     if not os.path.isfile(path):
         raise FileNotFoundError(f"Config file not found: {path}")
@@ -71,7 +70,7 @@ def get_user_input():
     The function prints a prompt ("You: ") and then reads from stdin until a
     blank line is entered. The collected lines are joined with newlines.
     """
-    print("You (finish with empty line. Print exit, if you want out):", flush=True)
+    print("You (finish with empty line. Type /quit to end the session and /reset to start anew):", flush=True)
     lines = []
     while True:
         try:
@@ -290,10 +289,14 @@ def main() -> None:
     while True:
         if user_conversation: 
             user_msg = get_user_input()
-            if user_msg.strip().lower() in {"exit", "quit", "/quit"}:
+            if user_msg.strip().lower() == "/quit":
                 print("Exiting chat.")
                 tool_registry.shut_down()
                 break
+            elif user_msg.strip().lower() == "/reset":
+                conversation = [{"role": "system", "content": cfg["system_prompt"]}]
+                tool_registry.reset()
+                continue
             if not user_msg:
                 # Empty input – just continue prompting.
                 continue
