@@ -184,7 +184,11 @@ def reconstruct_chat_completion(message, chunk, cfg):
                     tool["function"]["arguments"] += tool_delta.function.arguments
 
     # ---- finish reason ----
-    validate_and_set_unique_field(message=message, name="finish_reason", value=choice.finish_reason)
+    if (cfg.get("use_finish_reason", True)):
+        validate_and_set_unique_field(message=message, name="finish_reason", value=choice.finish_reason)
+    else:
+       if  choice.finish_reason:
+          message["finish_reason"] =  choice.finish_reason  
 
     return True
 
@@ -254,19 +258,20 @@ def stream_chat(messages, cfg, tool_registry):
 
     return message
 
-def validate_message(message):
+def validate_message(message, cfg):
     if not message["id"]:
         raise ResponseValidationError("Got no id in the response")
     if not message["role"]:
         raise ResponseValidationError("Got no id in the response")
-    if not message["finish_reason"]:
-        raise ResponseValidationError("Got no finish reason in the response")
-    if not (message["finish_reason"] == 'stop' 
-            or message["finish_reason"] == 'length' 
-            or message["finish_reason"] == 'content_filter'
-            or message["finish_reason"] == 'function_call'
-            or message["finish_reason"] == 'tool_calls'):
-        raise ResponseValidationError("Unknown finish reason in the response: "+message["finish_reason"])
+    if (cfg.get("use_finish_reason", True)):
+        if not message["finish_reason"]:
+            raise ResponseValidationError("Got no finish reason in the response")
+        if not (message["finish_reason"] == 'stop' 
+                or message["finish_reason"] == 'length' 
+                or message["finish_reason"] == 'content_filter'
+                or message["finish_reason"] == 'function_call'
+                or message["finish_reason"] == 'tool_calls'):
+            raise ResponseValidationError("Unknown finish reason in the response: "+message["finish_reason"])
     
         
      
@@ -308,7 +313,6 @@ def main() -> None:
     tool_names = cfg.get("tools", None)
     tool_registry = ToolRegistry(all_tools=all_tools, tool_names=tool_names) 
 
-
     user_conversation = True
     while True:
         if user_conversation: 
@@ -329,24 +333,43 @@ def main() -> None:
         gotError = False
         try:
             message = stream_chat(conversation, cfg, tool_registry=tool_registry)
-            validate_message(message=message)
+            validate_message(message=message, cfg=cfg)
         except Exception as e:
             gotError = True
             print("Got an ERROR communicating with LLM: ", type(e).__name__, ":", e)
             print("The response has been discarded. Try your message again!")
         if not gotError:    
-            if (message["finish_reason"] == 'stop' or message["finish_reason"] == 'length'):
-                append_message_to_conversation(conversation=conversation, message=message)
-                user_conversation = True
-            elif(message["finish_reason"] == 'content_filter'):
-                print("The input has been rejected due to content filter. The response has been discarded")
-                user_conversation =  True
-            elif (message["finish_reason"] == 'function_call'):
-                print("Function calls not supported yet. The response has been discarded")
-                user_conversation =  True
-            elif (message["finish_reason"] == 'tool_calls'):
-                user_conversation =  False
+            if cfg.get("use_finish_reason", True):
+                if (message["finish_reason"] == 'stop' or message["finish_reason"] == 'length'):
+                    user_conversation = True
+                    discard_answer = False
+                elif(message["finish_reason"] == 'content_filter'):
+                    print("The input has been rejected due to content filter. The response has been discarded")
+                    user_conversation =  True 
+                    discard_answer = True
+                elif (message["finish_reason"] == 'function_call'):
+                    print("Legacy function calls not supported yet. The response has been discarded")
+                    user_conversation =  True  
+                    discard_answer = True 
+                elif (message["finish_reason"] == 'tool_calls'):
+                    user_conversation =  False
+                    discard_answer = False
+            else: #Heuristic
+                if "tool_calls" in message:
+                    if (len(message["tool_calls"]) > 0):
+                        user_conversation =  False
+                        discard_answer = False
+                    else:
+                        user_conversation =  True
+                        discard_answer = False
+                else:
+                    user_conversation = True
+                    discard_answer = False
+
+            if not discard_answer:
                 append_message_to_conversation(conversation, message)
+
+            if not  user_conversation: #Tool Calls
                 for tool_call in message["tool_calls"]:
                     name = tool_call["function"]["name"]
                     args_str = tool_call["function"]["arguments"]
@@ -369,13 +392,13 @@ def main() -> None:
                     except Exception as e:
                         print(f"\nERROR: {e}")
                      
-                     
-
                     conversation.append({
                         "role": "tool",
                         "tool_call_id": tool_call["id"],
                         "content": result,
                     })
+
+                    
 
                         
 if __name__ == "__main__":

@@ -3,7 +3,8 @@
 
 llm_url: "https://api.openai.com/v1"   # Base URL of the LLM provider's API
 api_key: "YOUR_API_KEY"          # Your API key for authentication
-system_prompt: |
+#The system prompt passed to the model
+system_prompt: | 
   You are an AI assistant designed to serve the user requests as good as possible. For this purpose you are provided with some tools which you should always
   use if necessary. When in doubt, don't rely on your own knowledge, call tools. 
   Among other tools you are provided with a python executor, which can execute python scripts on the users's computer, a very powerful capability. 
@@ -14,6 +15,14 @@ system_prompt: |
     - You are explicitly allowed to look up anything on the internet without asking user's permission which is implicitly given  
     - Sometimes the user will refer to files using file names. Your can find those files in the directory ../data relative to the python executor's working directory  
 model: "YOUR_MODEL"               # Name of the model to use (can be changed)
-tools:
+#List of tool names (implemented in the tools subdirectory) the LLM can use.
+tools: 
   - execute_python
-#reasoning_effort: "medium"  
+#Reasoning effort - how much the model has to "think". 
+#Some newer OpenAI models reject this - then you have to comment the key out.
+reasoning_effort: "medium" 
+## Flags for  non-standard/faulty behaviour. Comment out when necessary
+#reasoning_field: "reasoning_content" #Field name for the reasoning content the model gives back (if any). The default is reasoning_content 
+#use_finish_reason: true
+
+ 
