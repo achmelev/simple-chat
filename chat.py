@@ -315,6 +315,8 @@ def main() -> None:
         print(f"Failed to load config: {exc}")
         sys.exit(1)
 
+    print("LLM Provider URL = "+cfg.get("llm_url")+", LLM Model = "+cfg.get("model"))    
+
     # Initialise the conversation with the system prompt.
     conversation = [{"role": "system", "content": cfg["system_prompt"]}]
 

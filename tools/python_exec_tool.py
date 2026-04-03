@@ -61,7 +61,6 @@ class PythonExecTool(Tool):
             [self.python_exec, "-m", "pip", "install", "--upgrade", "pip"],
             check=True
         )
-        print("DONE")
         return f"PythonExecTool initialized in {self.workdir}"
 
     # 🧹 Cleanup (optional)
