@@ -29,6 +29,7 @@ except ImportError:
 import os
 from typing import List, Dict, Any
 
+
 class ResponseValidationError(Exception):
     pass
 
@@ -95,10 +96,17 @@ def validate_and_set_unique_field(message, name, value):
 
         
 
+known_delta_attributes = ["content", "function_call", "refusal","role","tool_calls", "reasoning_content"]
+
+def check_unknown_delta_unknown_attributes(delta):
+    for attr in vars(delta):
+        if not attr in known_delta_attributes:
+            print("WARN: Model returns unknown message attribute "+attr)
+            known_delta_attributes.append(attr) 
+
 def reconstruct_chat_completion(message, chunk, cfg):
 
-    #print(chunk)
-
+    
      # -- Id ---
     validate_and_set_unique_field(message=message, name="id", value=chunk.id)
 
@@ -113,6 +121,8 @@ def reconstruct_chat_completion(message, chunk, cfg):
     if not choice.delta:
         raise ResponseValidationError("Got no delta in a chunk choice")
     delta = choice.delta
+
+    check_unknown_delta_unknown_attributes(delta=delta)
 
     reasoning_field = cfg.get("reasoning_field", "reasoning_content")
 
