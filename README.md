@@ -50,6 +50,30 @@ tools:
 reasoning_effort: "medium"
 ```
 
+### Command-line tools
+
+Arbitrary executables can be exposed as tools without writing any code.
+Add a `command_tools` list to the config — each entry requires `binary`
+and `description`; `name` is optional and defaults to the binary's
+filename.
+
+``` yaml
+command_tools:
+  - binary: /usr/bin/mvn
+    description: "Runs Maven build commands (e.g. compile, test, package)"
+    name: maven          # optional — defaults to "mvn"
+  - binary: /usr/bin/git
+    description: "Runs git commands in a given directory"
+
+tools:
+  - maven
+  - git
+  - execute_python
+```
+
+Each tool accepts two arguments from the LLM: `working_directory` and
+`arguments` (a list of strings passed directly to the binary).
+
 ------------------------------------------------------------------------
 
 ## 🚀 Usage

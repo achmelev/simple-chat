@@ -22,6 +22,12 @@ class TimeTool(Tool):
         # Simple in-memory cache
         self.cache = {}
 
+    def set_up(self) -> str:
+        return "TimeTool initialized"
+
+    def shut_down(self) -> str:
+        return "TimeTool shut down"
+
     def name(self):
         return "get_current_time"
 

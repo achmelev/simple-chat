@@ -1,15 +1,25 @@
 from typing import List, Dict
 from .base import Tool
+from .configurable_command_tool import ConfigurableCommandLineTool
 
 class ToolRegistry:
-    def __init__(self, all_tools, tool_names):
+    def __init__(self, all_tools, tool_names, command_tool_configs=None):
+        if command_tool_configs:
+            for cfg in command_tool_configs:
+                all_tools = list(all_tools) + [ConfigurableCommandLineTool(
+                    binary=cfg["binary"],
+                    description=cfg["description"],
+                    name=cfg.get("name")
+                )]
         tools_to_install = [];
         if tool_names:
             for tool in all_tools:
               name = tool.name()
               if name in tool_names:
                 try:
-                    print(tool.set_up())
+                    result = tool.set_up()
+                    if result is not None:
+                        print(result)
                     tools_to_install.append(tool)
                 except Exception as e:
                     print(f"Tool setup failed: {tool.name()} -> {e}")
@@ -39,18 +49,24 @@ class ToolRegistry:
     def shut_down(self):
         for tool in self.tools.values():
             try:
-                print(tool.shut_down())
+                result = tool.shut_down()
+                if result is not None:
+                    print(result)
             except Exception as e:
                 print(f"Tool shutdown failed: {tool.name()} -> {e}")
 
     def reset(self):
         for tool in self.tools.values():
             try:
-                print(tool.shut_down())
+                result = tool.shut_down()
+                if result is not None:
+                    print(result)
             except Exception as e:
                 print(f"Tool shutdown failed: {tool.name()} -> {e}")  
             try:
-                print(tool.set_up())
+                result = tool.set_up()
+                if result is not None:
+                    print(result)
             except Exception as e:
-                print(f"Tool setup failed: {tool.name()} -> {e}")               
+                print(f"Tool setup failed: {tool.name()} -> {e}")
 
