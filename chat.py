@@ -271,6 +271,9 @@ def stream_chat(messages, cfg, tool_registry):
                 in_reasoning = True
                 print(message["reasoning_content_token"], end="", flush=True)    
 
+    if in_reasoning:
+        print("\n</think>", flush=True)
+
     # Ensure newline after completion.
     print()
 
