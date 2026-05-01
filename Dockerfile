@@ -29,6 +29,7 @@ COPY tools/time_tool.py           /opt/simplechat/tools/
 COPY tools/python_exec_tool.py    /opt/simplechat/tools/
 COPY tools/command_line_tool.py   /opt/simplechat/tools/
 COPY tools/configurable_command_tool.py /opt/simplechat/tools/
+COPY tools/write_file_tool.py           /opt/simplechat/tools/
 RUN python3 -m venv /opt/simplechat-venv \
     && /opt/simplechat-venv/bin/pip install --upgrade pip \
     && /opt/simplechat-venv/bin/pip install -r /opt/simplechat/requirements.txt
