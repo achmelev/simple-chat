@@ -260,19 +260,19 @@ def stream_chat(messages, cfg, tool_registry):
             if message["reasoning_content_token"]:
                 print(message["reasoning_content_token"], end="", flush=True)
             if message["content_token"]: 
-                print("\n</think>", flush=True)
+                print("\n</THINKING>", flush=True)
                 in_reasoning = False
                 print(message["content_token"], end="", flush=True)
         else:
             if message["content_token"]: 
                 print(message["content_token"], end="", flush=True)
             if message["reasoning_content_token"]:
-                print("<think>", flush=True)
+                print("<THINKING>", flush=True)
                 in_reasoning = True
                 print(message["reasoning_content_token"], end="", flush=True)    
 
     if in_reasoning:
-        print("\n</think>", flush=True)
+        print("\n</THINKING>", flush=True)
 
     # Ensure newline after completion.
     print()
