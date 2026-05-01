@@ -51,6 +51,14 @@ def load_config(path):
         raise FileNotFoundError(f"Config file not found: {path}")
     with open(path, "r", encoding="utf-8") as f:
         cfg = yaml.safe_load(f) or {}
+    env_fallbacks = {
+        "llm_url": "SC_LLM_URL",
+        "api_key": "SC_API_KEY",
+        "model":   "SC_MODEL",
+    }
+    for key, env_var in env_fallbacks.items():
+        if key not in cfg and env_var in os.environ:
+            cfg[key] = os.environ[env_var]
     required = ["llm_url", "api_key", "system_prompt", "model"]
     missing = [k for k in required if k not in cfg]
     if missing:

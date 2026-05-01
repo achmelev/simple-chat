@@ -74,6 +74,29 @@ tools:
 Each tool accepts two arguments from the LLM: `working_directory` and
 `arguments` (a list of strings passed directly to the binary).
 
+### Environment variables
+
+`llm_url`, `api_key`, and `model` can be set via environment variables
+instead of (or as defaults for) the config file. Values in the config
+file take precedence.
+
+| Config key | Environment variable |
+|------------|----------------------|
+| `llm_url`  | `SC_LLM_URL`         |
+| `api_key`  | `SC_API_KEY`         |
+| `model`    | `SC_MODEL`           |
+
+The included `set-provider.sh` script sets all three at once by provider
+id:
+
+``` bash
+source set-provider.sh openai      # or: deepinfra, anthropic
+python chat.py --config config.yaml
+```
+
+The script can be sourced repeatedly to switch providers within the same
+shell session.
+
 ------------------------------------------------------------------------
 
 ## 🚀 Usage
