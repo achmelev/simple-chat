@@ -17,6 +17,7 @@ After the response completes, the prompt appears again.
 import argparse
 import sys
 import json
+import httpx
 from tools.time_tool import TimeTool
 from tools.python_exec_tool import PythonExecTool
 from tools.write_file_tool import WriteFileTool
@@ -215,9 +216,11 @@ def reconstruct_chat_completion(message, chunk, cfg):
 def stream_chat(messages, cfg, tool_registry):
     
     # Initialise the OpenAI client with the provided base URL and API key.
+    ssl_verify = cfg.get("ssl_verify", True)
     client = OpenAI(
         base_url=cfg["llm_url"].rstrip("/"),
         api_key=cfg["api_key"],
+        http_client=httpx.Client(verify=ssl_verify),
     )
 
     #Initialize recostructed message
