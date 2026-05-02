@@ -20,6 +20,7 @@ import json
 from tools.time_tool import TimeTool
 from tools.python_exec_tool import PythonExecTool
 from tools.write_file_tool import WriteFileTool
+from tools.edit_file_tool import EditFileTool
 from tools.registry import ToolRegistry
 # Load YAML configuration. The PyYAML package is required.
 try:
@@ -333,7 +334,7 @@ def main() -> None:
     conversation = [{"role": "system", "content": cfg["system_prompt"]}]
 
     #Tools initializing
-    all_tools = [TimeTool(), PythonExecTool(), WriteFileTool()]
+    all_tools = [TimeTool(), PythonExecTool(), WriteFileTool(), EditFileTool()]
     tool_names = cfg.get("tools", None)
     tool_registry = ToolRegistry(all_tools=all_tools, tool_names=tool_names, command_tool_configs=cfg.get("command_tools"))
 
