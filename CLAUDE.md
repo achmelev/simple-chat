@@ -43,3 +43,13 @@ The repo ships several ready-made configs for different providers and use cases 
 1. Create a file in `tools/` subclassing `Tool` from `tools/base.py`
 2. Implement `name()`, `description()`, `parameters()` (OpenAI JSON schema), and `execute(arguments)`
 3. Register the tool in `tools/registry.py` and enable it via the `tools:` list in config
+
+## Dockerfile
+
+The `Dockerfile` copies every source file individually into `/opt/simplechat/`. **Any time a source file is added or removed, the corresponding `COPY` line must be added or removed in the Dockerfile as well.** Currently copied files:
+
+- `requirements.txt`, `chat.py`
+- `tools/__init__.py`, `tools/base.py`, `tools/registry.py`
+- `tools/time_tool.py`, `tools/python_exec_tool.py`
+- `tools/command_line_tool.py`, `tools/configurable_command_tool.py`
+- `tools/write_file_tool.py`, `tools/edit_file_tool.py`
