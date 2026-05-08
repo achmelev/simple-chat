@@ -254,7 +254,7 @@ def stream_chat(messages, cfg, tool_registry):
             n=1
         )
 
-    output = LLMResponseOutput()
+    output = LLMResponseOutput(cfg)
 
     for chunk in response:
         if not reconstruct_chat_completion(message=message, chunk=chunk, cfg=cfg):
