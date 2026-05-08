@@ -29,7 +29,6 @@ Interactive commands during a session: `/quit`, `/reset`.
 **Tool system** (`tools/`):
 - `base.py` — abstract `Tool` class; subclasses implement `name()`, `description()`, `parameters()`, `execute(arguments)`
 - `registry.py` — `ToolRegistry` manages lifecycle (init/shutdown) and converts tools to OpenAI function format
-- `time_tool.py` — returns current time at a given location (geopy + timezonefinder, with in-memory cache)
 - `python_exec_tool.py` — executes Python code in a temporary venv (isolated per session, pip-installable, 60s timeout)
 
 ## Configuration
@@ -50,6 +49,6 @@ The `Dockerfile` copies every source file individually into `/opt/simplechat/`. 
 
 - `requirements.txt`, `chat.py`
 - `tools/__init__.py`, `tools/base.py`, `tools/registry.py`
-- `tools/time_tool.py`, `tools/python_exec_tool.py`
+- `tools/python_exec_tool.py`
 - `tools/command_line_tool.py`, `tools/configurable_command_tool.py`
 - `tools/write_file_tool.py`, `tools/edit_file_tool.py`

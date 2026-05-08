@@ -25,7 +25,6 @@ COPY chat.py           /opt/simplechat/
 COPY tools/__init__.py            /opt/simplechat/tools/
 COPY tools/base.py                /opt/simplechat/tools/
 COPY tools/registry.py            /opt/simplechat/tools/
-COPY tools/time_tool.py           /opt/simplechat/tools/
 COPY tools/python_exec_tool.py    /opt/simplechat/tools/
 COPY tools/command_line_tool.py   /opt/simplechat/tools/
 COPY tools/configurable_command_tool.py /opt/simplechat/tools/

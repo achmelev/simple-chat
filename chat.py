@@ -18,7 +18,7 @@ import argparse
 import sys
 import json
 import httpx
-from tools.time_tool import TimeTool
+import traceback
 from tools.python_exec_tool import PythonExecTool
 from tools.write_file_tool import WriteFileTool
 from tools.edit_file_tool import EditFileTool
@@ -337,7 +337,7 @@ def main() -> None:
     conversation = [{"role": "system", "content": cfg["system_prompt"]}]
 
     #Tools initializing
-    all_tools = [TimeTool(), PythonExecTool(), WriteFileTool(), EditFileTool()]
+    all_tools = [PythonExecTool(), WriteFileTool(), EditFileTool()]
     tool_names = cfg.get("tools", None)
     tool_registry = ToolRegistry(all_tools=all_tools, tool_names=tool_names, command_tool_configs=cfg.get("command_tools"))
 
@@ -365,6 +365,7 @@ def main() -> None:
         except Exception as e:
             gotError = True
             print("Got an ERROR communicating with LLM: ", type(e).__name__, ":", e)
+            traceback.print_exc()
             print("The response has been discarded. Try your message again!")
         if not gotError:    
             if cfg.get("use_finish_reason", True):

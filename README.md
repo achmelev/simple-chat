@@ -12,8 +12,7 @@ It supports **streaming responses**, **tool execution**, and
 -   Python 3.9+
 -   API key for an OpenAI-compatible provider
 
-Required packages: - openai\>=1.0.0 - PyYAML\>=6.0 - geopy\>=2.4.1 -
-timezonefinder\>=8.2.1
+Required packages: - openai\>=1.0.0 - PyYAML\>=6.0
 
 ------------------------------------------------------------------------
 
