@@ -22,6 +22,7 @@ ENV PATH="/opt/maven/bin:${PATH}"
 # Copy SimpleChat source and install Python dependencies in an isolated venv
 COPY requirements.txt /opt/simplechat/
 COPY chat.py           /opt/simplechat/
+COPY llmrespoutput.py  /opt/simplechat/
 COPY tools/__init__.py            /opt/simplechat/tools/
 COPY tools/base.py                /opt/simplechat/tools/
 COPY tools/registry.py            /opt/simplechat/tools/

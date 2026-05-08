@@ -23,6 +23,7 @@ from tools.python_exec_tool import PythonExecTool
 from tools.write_file_tool import WriteFileTool
 from tools.edit_file_tool import EditFileTool
 from tools.registry import ToolRegistry
+from llmrespoutput import LLMResponseOutput
 # Load YAML configuration. The PyYAML package is required.
 try:
     import yaml
@@ -214,7 +215,7 @@ def reconstruct_chat_completion(message, chunk, cfg):
     return True
 
 def stream_chat(messages, cfg, tool_registry):
-    
+
     # Initialise the OpenAI client with the provided base URL and API key.
     ssl_verify = cfg.get("ssl_verify", True)
     client = OpenAI(
@@ -242,7 +243,7 @@ def stream_chat(messages, cfg, tool_registry):
             tools=tool_registry.get_openai_tools(),
             stream=True,
             n=1,
-            reasoning_effort=cfg.get("reasoning_effort") 
+            reasoning_effort=cfg.get("reasoning_effort")
         )
     else:
        response = client.chat.completions.create(
@@ -251,36 +252,16 @@ def stream_chat(messages, cfg, tool_registry):
             tools=tool_registry.get_openai_tools(),
             stream=True,
             n=1
-        ) 
-            
-    
+        )
 
-    in_reasoning = False
+    output = LLMResponseOutput()
 
     for chunk in response:
         if not reconstruct_chat_completion(message=message, chunk=chunk, cfg=cfg):
             continue
-        #print(str(message["reasoning_content_token"])+":"+str(message["content_token"]))
-        if (in_reasoning):
-            if message["reasoning_content_token"]:
-                print(message["reasoning_content_token"], end="", flush=True)
-            if message["content_token"]: 
-                print("\n</THINKING>", flush=True)
-                in_reasoning = False
-                print(message["content_token"], end="", flush=True)
-        else:
-            if message["content_token"]: 
-                print(message["content_token"], end="", flush=True)
-            if message["reasoning_content_token"]:
-                print("<THINKING>", flush=True)
-                in_reasoning = True
-                print(message["reasoning_content_token"], end="", flush=True)    
+        output.onLLMMessage(message)
 
-    if in_reasoning:
-        print("\n</THINKING>", flush=True)
-
-    # Ensure newline after completion.
-    print()
+    output.onLLMMessage(None)
 
     return message
 

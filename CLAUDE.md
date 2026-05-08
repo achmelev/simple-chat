@@ -19,6 +19,8 @@ Interactive commands during a session: `/quit`, `/reset`.
 
 **Entry point:** `chat.py` — loads config, initializes `ToolRegistry`, runs the conversation loop.
 
+**`llmrespoutput.py`** — `LLMResponseOutput` class; streams LLM output to the terminal token-by-token, handling `<THINKING>` / `</THINKING>` wrapping for reasoning content. Call `onLLMMessage(message)` per chunk and `onLLMMessage(None)` to finalize.
+
 **Conversation loop** (`chat.py`):
 1. Collect user input (multi-line, terminated by empty line)
 2. Stream LLM response token-by-token via OpenAI SDK
@@ -47,7 +49,7 @@ The repo ships several ready-made configs for different providers and use cases 
 
 The `Dockerfile` copies every source file individually into `/opt/simplechat/`. **Any time a source file is added or removed, the corresponding `COPY` line must be added or removed in the Dockerfile as well.** Currently copied files:
 
-- `requirements.txt`, `chat.py`
+- `requirements.txt`, `chat.py`, `llmrespoutput.py`
 - `tools/__init__.py`, `tools/base.py`, `tools/registry.py`
 - `tools/python_exec_tool.py`
 - `tools/command_line_tool.py`, `tools/configurable_command_tool.py`
