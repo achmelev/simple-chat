@@ -151,6 +151,7 @@ def reconstruct_chat_completion(message, chunk, cfg):
         reasoning_content_token = None    
     message["content_token"] = content_token
     message["reasoning_content_token"] = reasoning_content_token
+    message["tool_call_token"] = False
 
 
     # ---- content ----
@@ -165,6 +166,7 @@ def reconstruct_chat_completion(message, chunk, cfg):
 
     # ---- function_call (legacy style) ----
     if delta.function_call:
+        message["tool_call_token"] = True
         if message["function_call"] is None:
             message["function_call"] = {
                 "name": "",
@@ -179,6 +181,7 @@ def reconstruct_chat_completion(message, chunk, cfg):
 
     # ---- tool_calls (new style, streamed in pieces) ----
     if delta.tool_calls:
+        message["tool_call_token"] = True
         for tool_delta in delta.tool_calls:
             index = tool_delta.index
 
@@ -232,7 +235,8 @@ def stream_chat(messages, cfg, tool_registry):
         "reasoning_content": "",
         "tool_calls": [],
         "function_call": None,
-        "finish_reason": None
+        "finish_reason": None,
+        "tool_call_token": False
     }
 
     # Request a streaming response using the new SDK syntax.
