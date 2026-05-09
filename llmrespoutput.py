@@ -1,49 +1,61 @@
 _THINKING_PREFIX = "Thinking "
 _TOOL_CALL_PREFIX = "Assembling tool call "
-_SPINNER_CLEAR_WIDTH = 24
 
 
 class LLMResponseOutput:
     _SPINNER = ['|', '/', '-', '\\']
 
     def __init__(self, cfg=None):
-        self._in_reasoning = False
-        self._in_tool_call = False
-        self._content_on_current_line = False
+        self._state = None  # None | "thinking" | "speaking" | "tooling"
         self._responsetrace = (cfg or {}).get("responsetrace", False)
         self._spinner_index = 0
+        self._cursor_at_line_start = True
 
-    def _clear_spinner(self):
-        print("\r" + " " * _SPINNER_CLEAR_WIDTH + "\r", end="", flush=True)
+    def _newline(self):
+        """Print a newline only if the cursor is not already at the start of a line."""
+        if not self._cursor_at_line_start:
+            print(flush=True)
+            self._cursor_at_line_start = True
 
     def _show_spinner(self, prefix):
         print(f"\r{prefix}{self._SPINNER[self._spinner_index]}", end="", flush=True)
+        self._cursor_at_line_start = False
 
     def _update_spinner(self, prefix):
         self._spinner_index = (self._spinner_index + 1) % len(self._SPINNER)
         print(f"\r{prefix}{self._SPINNER[self._spinner_index]}", end="", flush=True)
+        self._cursor_at_line_start = False
 
-    def _ensure_fresh_line(self):
-        """Move to a new line if content was printed without a trailing newline."""
-        if self._content_on_current_line:
-            print(flush=True)
-            self._content_on_current_line = False
+    def _leave_state(self):
+        """Close the current state with a line break. No-op when state is None."""
+        if self._state == "thinking" and self._responsetrace:
+            self._newline()
+            print("</THINKING>", flush=True)
+            self._cursor_at_line_start = True
+        elif self._state is not None:
+            self._newline()
+        self._state = None
 
-    def _enter_spinner(self, prefix):
-        self._ensure_fresh_line()
-        self._show_spinner(prefix)
+    def _enter_thinking(self):
+        self._state = "thinking"
+        if self._responsetrace:
+            print("<THINKING>", flush=True)
+            self._cursor_at_line_start = True
+        else:
+            self._show_spinner(_THINKING_PREFIX)
+
+    def _enter_speaking(self):
+        self._state = "speaking"
+
+    def _enter_tooling(self):
+        self._state = "tooling"
+        self._show_spinner(_TOOL_CALL_PREFIX)
 
     def onLLMMessage(self, message):
         """Handle one LLM message state update. Pass None to signal end of stream."""
         if message is None:
-            if self._in_reasoning:
-                if self._responsetrace:
-                    print("\n</THINKING>", flush=True)
-                else:
-                    self._clear_spinner()
-            elif self._in_tool_call:
-                self._clear_spinner()
-            print()
+            if self._state is not None:
+                self._leave_state()
             return
 
         reasoning_token = message["reasoning_content_token"]
@@ -51,45 +63,27 @@ class LLMResponseOutput:
         tool_call_token = message["tool_call_token"]
 
         if reasoning_token:
-            if self._in_tool_call:
-                self._clear_spinner()
-                self._in_tool_call = False
-            if not self._in_reasoning:
-                self._in_reasoning = True
-                if self._responsetrace:
-                    self._ensure_fresh_line()
-                    print("<THINKING>", flush=True)
-                    print(reasoning_token, end="", flush=True)
-                else:
-                    self._enter_spinner(_THINKING_PREFIX)
-            else:
-                if self._responsetrace:
-                    print(reasoning_token, end="", flush=True)
-                else:
-                    self._update_spinner(_THINKING_PREFIX)
+            just_entered = self._state != "thinking"
+            if just_entered:
+                self._leave_state()
+                self._enter_thinking()
+            if self._responsetrace:
+                print(reasoning_token, end="", flush=True)
+                self._cursor_at_line_start = reasoning_token.endswith('\n')
+            elif not just_entered:
+                self._update_spinner(_THINKING_PREFIX)
 
         if content_token:
-            if self._in_reasoning:
-                if self._responsetrace:
-                    print("\n</THINKING>", flush=True)
-                else:
-                    self._clear_spinner()
-                self._in_reasoning = False
-            elif self._in_tool_call:
-                self._clear_spinner()
-                self._in_tool_call = False
+            if self._state != "speaking":
+                self._leave_state()
+                self._enter_speaking()
             print(content_token, end="", flush=True)
-            self._content_on_current_line = True
+            self._cursor_at_line_start = content_token.endswith('\n')
 
         if not reasoning_token and not content_token and tool_call_token:
-            if self._in_reasoning:
-                if self._responsetrace:
-                    print("\n</THINKING>", flush=True)
-                else:
-                    self._clear_spinner()
-                self._in_reasoning = False
-            if not self._in_tool_call:
-                self._in_tool_call = True
-                self._enter_spinner(_TOOL_CALL_PREFIX)
+            just_entered = self._state != "tooling"
+            if just_entered:
+                self._leave_state()
+                self._enter_tooling()
             else:
                 self._update_spinner(_TOOL_CALL_PREFIX)
