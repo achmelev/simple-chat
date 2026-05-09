@@ -27,6 +27,9 @@ class WriteFileTool(Tool):
             "required": ["path", "text"]
         }
 
+    def short_format_call(self, arguments, result) -> str:
+        return f"Writing file {arguments.get('path', '?')}"
+
     def execute(self, arguments: Dict[str, Any]) -> str:
         path = arguments.get("path")
         text = arguments.get("text")

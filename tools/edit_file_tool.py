@@ -45,6 +45,9 @@ class EditFileTool(Tool):
             "required": ["path", "old_string", "new_string"]
         }
 
+    def short_format_call(self, arguments, result) -> str:
+        return f"Editing file {arguments.get('path', '?')}"
+
     def execute(self, arguments: Dict[str, Any]) -> str:
         path = arguments.get("path")
         old_string = arguments.get("old_string")
