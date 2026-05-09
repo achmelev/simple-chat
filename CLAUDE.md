@@ -35,7 +35,7 @@ Interactive commands during a session: `/quit`, `/reset`.
 
 ## Configuration
 
-All configs are YAML. Required fields: `llm_url`, `api_key`, `model`, `system_prompt`. Optional: `tools` (list), `reasoning_effort` ("low"/"medium"/"high"), `reasoning_field` (default: `"reasoning_content"`), `use_finish_reason`, `ssl_verify` (default: `true` — set to `false` to disable SSL certificate verification, e.g. for local endpoints with self-signed certs), `trace` (optional map with subkeys):
+All configs are YAML. Required fields: `llm_url`, `api_key`, `model`, `system_prompt`. Optional: `tools` (list), `reasoning_effort` ("low"/"medium"/"high"), `reasoning_field` (default: `"reasoning_content"`), `use_finish_reason`, `ssl_verify` (default: `true` — set to `false` to disable SSL certificate verification, e.g. for local endpoints with self-signed certs), `tool_timeout` (default: `300` seconds — subprocess timeout for all tool executions), `trace` (optional map with subkeys):
 - `trace.thinking` (default: `false`) — print full reasoning content wrapped in `<THINKING>`/`</THINKING>`; when `false`, reasoning is shown as an animated spinner
 - `trace.toolcall` (default: `false`) — print the XML-formatted tool call input/output after each tool execution
 - `trace.llmoutput` (default: `false`) — write a detailed `llmtrace<timestamp>.txt` file tracing all LLM output state changes

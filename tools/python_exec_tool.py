@@ -114,7 +114,7 @@ class PythonExecTool(Tool):
                     cwd=self.workdir,
                     capture_output=True,
                     text=True,
-                    timeout=60
+                    timeout=self._timeout
                 )
 
                 output["execution"] = {

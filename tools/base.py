@@ -3,6 +3,8 @@ from typing import Dict, Any
 import json
 
 class Tool(ABC):
+    _timeout: int = 300
+
     @abstractmethod
     def name(self) -> str:
         """Unique tool name (used by LLM)"""

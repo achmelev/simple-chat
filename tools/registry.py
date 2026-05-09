@@ -3,7 +3,7 @@ from .base import Tool
 from .configurable_command_tool import ConfigurableCommandLineTool
 
 class ToolRegistry:
-    def __init__(self, all_tools, tool_names, command_tool_configs=None):
+    def __init__(self, all_tools, tool_names, command_tool_configs=None, tool_timeout=300):
         if command_tool_configs:
             for cfg in command_tool_configs:
                 all_tools = list(all_tools) + [ConfigurableCommandLineTool(
@@ -24,6 +24,8 @@ class ToolRegistry:
                 except Exception as e:
                     print(f"Tool setup failed: {tool.name()} -> {e}")
         self.tools = {tool.name(): tool for tool in tools_to_install}
+        for tool in self.tools.values():
+            tool._timeout = tool_timeout
         if (len(self.tools) == 0):
             print("NO TOOLS INSTALLED")
         else:

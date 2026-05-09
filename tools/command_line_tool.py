@@ -44,7 +44,7 @@ class CommandLineTool(Tool):
                 cwd=working_directory,
                 capture_output=True,
                 text=True,
-                timeout=60
+                timeout=self._timeout
             )
             output = {
                 "stdout": result.stdout.strip(),

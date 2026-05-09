@@ -324,7 +324,7 @@ def main() -> None:
     #Tools initializing
     all_tools = [PythonExecTool(), WriteFileTool(), EditFileTool()]
     tool_names = cfg.get("tools", None)
-    tool_registry = ToolRegistry(all_tools=all_tools, tool_names=tool_names, command_tool_configs=cfg.get("command_tools"))
+    tool_registry = ToolRegistry(all_tools=all_tools, tool_names=tool_names, command_tool_configs=cfg.get("command_tools"), tool_timeout=cfg.get("tool_timeout", 300))
 
     user_conversation = True
     while True:
