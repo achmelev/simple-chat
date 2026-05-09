@@ -393,18 +393,19 @@ def main() -> None:
                     except json.JSONDecodeError:
                         args = {}
 
-                    print(f"\n[Executing tool: {name}]")
-
                     try:
                         result = tool_registry.execute(name, args)
                     except Exception as e:
                         result = f"ERROR: {e}"
-                    
-                    try:
-                        callString = tool_registry.format_call(name, args,result)
-                        print(f"\n{callString}\n")
-                    except Exception as e:
-                        print(f"\nERROR: {e}")
+
+                    print(f"Executing {tool_registry.short_format_call(name, args, result)}")
+                   
+                    if cfg.get("responsetrace", False):
+                        try:
+                            callString = tool_registry.format_call(name, args, result)
+                            print(f"\n{callString}\n")
+                        except Exception as e:
+                            print(f"\nERROR: {e}")
                      
                     conversation.append({
                         "role": "tool",

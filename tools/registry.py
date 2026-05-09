@@ -41,6 +41,11 @@ class ToolRegistry:
             raise ValueError(f"Unknown tool: {name}")
         return self.tools[name].execute(arguments)
     
+    def short_format_call(self, name: str, arguments: Dict, result: str):
+        if name not in self.tools:
+            return (f"{name} (unknown)")
+        return self.tools[name].short_format_call(arguments=arguments, result=result)
+
     def format_call(self, name: str, arguments: Dict, result: str):
         if name not in self.tools:
             raise ValueError(f"Unknown tool: {name}")
