@@ -23,6 +23,9 @@ class LLMResponseOutput:
             self._trace_file.write(f"[{ts}] {msg}\n")
             self._trace_file.flush()
 
+    def _is_all_non_printable(self, s):
+        return not any(c.isprintable() for c in s)
+
     def _newline(self):
         """Print a newline only if the cursor is not already at the start of a line."""
         if not self._cursor_at_line_start:
@@ -91,8 +94,11 @@ class LLMResponseOutput:
                 self._leave_state()
                 self._enter_thinking()
             if self._responsetrace:
-                print(reasoning_token, end='', flush=True)
-                self._cursor_at_line_start = reasoning_token.endswith('\n')
+                if not (self._cursor_at_line_start and self._is_all_non_printable(reasoning_token)):
+                    print(reasoning_token, end='', flush=True)
+                    self._cursor_at_line_start = reasoning_token.endswith('\n')
+                else:
+                    self._trace(f"REASONING TOKEN suppressed (all non-printable, cursor at line start): {repr(reasoning_token)}")
             elif not just_entered:
                 self._update_spinner(_THINKING_PREFIX)
 
@@ -100,8 +106,11 @@ class LLMResponseOutput:
             if self._state != "speaking":
                 self._leave_state()
                 self._enter_speaking()
-            print(content_token, end='', flush=True)
-            self._cursor_at_line_start = content_token.endswith('\n')
+            if not (self._cursor_at_line_start and self._is_all_non_printable(content_token)):
+                print(content_token, end='', flush=True)
+                self._cursor_at_line_start = content_token.endswith('\n')
+            else:
+                self._trace(f"CONTENT TOKEN suppressed (all non-printable, cursor at line start): {repr(content_token)}")
 
         if not reasoning_token and not content_token and tool_call_token:
             just_entered = self._state != "tooling"
