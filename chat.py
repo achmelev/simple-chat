@@ -400,7 +400,7 @@ def main() -> None:
 
                     print(f"Executing {tool_registry.short_format_call(name, args, result)}")
                    
-                    if cfg.get("responsetrace", False):
+                    if cfg.get("trace", {}).get("toolcall", False):
                         try:
                             callString = tool_registry.format_call(name, args, result)
                             print(f"\n{callString}\n")

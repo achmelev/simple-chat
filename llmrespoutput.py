@@ -9,11 +9,12 @@ class LLMResponseOutput:
 
     def __init__(self, cfg=None):
         self._state = None  # None | "thinking" | "speaking" | "tooling"
-        self._responsetrace = (cfg or {}).get("responsetrace", False)
+        trace = (cfg or {}).get("trace", {})
+        self._tracethinking = trace.get("thinking", False)
         self._spinner_index = 0
         self._cursor_at_line_start = True
         self._trace_file = None
-        if (cfg or {}).get("llmtrace", False):
+        if trace.get("llmoutput", False):
             ts = datetime.datetime.now().strftime("%Y%m%d_%H%M%S")
             self._trace_file = open(f"llmtrace{ts}.txt", "w", encoding="utf-8")
 
@@ -47,7 +48,7 @@ class LLMResponseOutput:
     def _leave_state(self):
         """Close the current state with a line break. No-op when state is None."""
         self._trace(f"LEAVE {self._state} | cursor_at_line_start={self._cursor_at_line_start}")
-        if self._state == "thinking" and self._responsetrace:
+        if self._state == "thinking" and self._tracethinking:
             self._newline()
             print("</THINKING>", flush=True)
             self._cursor_at_line_start = True
@@ -58,7 +59,7 @@ class LLMResponseOutput:
     def _enter_thinking(self):
         self._state = "thinking"
         self._trace(f"ENTER thinking | cursor_at_line_start={self._cursor_at_line_start}")
-        if self._responsetrace:
+        if self._tracethinking:
             print("<THINKING>", flush=True)
             self._cursor_at_line_start = True
         else:
@@ -93,7 +94,7 @@ class LLMResponseOutput:
             if just_entered:
                 self._leave_state()
                 self._enter_thinking()
-            if self._responsetrace:
+            if self._tracethinking:
                 if not (self._cursor_at_line_start and self._is_all_non_printable(reasoning_token)):
                     print(reasoning_token, end='', flush=True)
                     self._cursor_at_line_start = reasoning_token.endswith('\n')
