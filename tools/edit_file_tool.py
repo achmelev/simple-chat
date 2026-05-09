@@ -5,8 +5,17 @@ from tools.base import Tool
 
 class EditFileTool(Tool):
 
+    def __init__(self, target_cfg=None):
+        newline_setting = (target_cfg or {}).get("newline", "auto")
+        if newline_setting == "windows":
+            self._newline = "\r\n"
+        elif newline_setting == "unix":
+            self._newline = "\n"
+        else:
+            self._newline = None  # platform default
+
     def name(self) -> str:
-        return "editfile"
+        return "edit_file"
 
     def description(self) -> str:
         return (
@@ -77,7 +86,7 @@ class EditFileTool(Tool):
         new_content = content.replace(old_string, new_string, 1)
 
         try:
-            with open(path, "w", encoding="utf-8") as f:
+            with open(path, "w", encoding="utf-8", newline=self._newline) as f:
                 f.write(new_content)
         except Exception as e:
             return f"ERROR: could not write file: {e}"

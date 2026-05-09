@@ -10,12 +10,6 @@ class ConfigurableCommandLineTool(CommandLineTool):
         self._description = description
         self._name = name or os.path.basename(binary)
 
-    def set_up(self) -> str:
-        return f"{self._name} ({self._binary}) initialized"
-
-    def shut_down(self) -> str:
-        return f"{self._name} shut down"
-
     def binary_path(self) -> str:
         return self._binary
 

@@ -322,7 +322,7 @@ def main() -> None:
     conversation = [{"role": "system", "content": cfg["system_prompt"]}]
 
     #Tools initializing
-    all_tools = [PythonExecTool(), WriteFileTool(), EditFileTool()]
+    all_tools = [PythonExecTool(), WriteFileTool(cfg.get("target")), EditFileTool(cfg.get("target"))]
     tool_names = cfg.get("tools", None)
     tool_registry = ToolRegistry(all_tools=all_tools, tool_names=tool_names, command_tool_configs=cfg.get("command_tools"), tool_timeout=cfg.get("tool_timeout", 300))
 

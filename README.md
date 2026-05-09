@@ -45,6 +45,8 @@ model: "YOUR_MODEL"
 
 tools:
   - execute_python
+  - write_file
+  - edit_file
 
 reasoning_effort: "medium"
 ```

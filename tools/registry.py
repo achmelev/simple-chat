@@ -26,12 +26,17 @@ class ToolRegistry:
         self.tools = {tool.name(): tool for tool in tools_to_install}
         for tool in self.tools.values():
             tool._timeout = tool_timeout
+        if tool_names:
+            known = {tool.name() for tool in all_tools}
+            for name in tool_names:
+                if name not in known:
+                    print(f"WARN: unknown tool '{name}' in config")
         if (len(self.tools) == 0):
             print("NO TOOLS INSTALLED")
         else:
             print("INSTALLED TOOLS: ", end="")
             for tool_name in self.tools:
-                print(tool_name+" ")
+                print(tool_name+" ", end="")
             print() 
 
 

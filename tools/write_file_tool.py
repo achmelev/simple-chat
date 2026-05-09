@@ -5,6 +5,15 @@ from tools.base import Tool
 
 class WriteFileTool(Tool):
 
+    def __init__(self, target_cfg=None):
+        newline_setting = (target_cfg or {}).get("newline", "auto")
+        if newline_setting == "windows":
+            self._newline = "\r\n"
+        elif newline_setting == "unix":
+            self._newline = "\n"
+        else:
+            self._newline = None  # platform default
+
     def name(self) -> str:
         return "write_file"
 
@@ -41,7 +50,7 @@ class WriteFileTool(Tool):
 
         try:
             os.makedirs(os.path.dirname(os.path.abspath(path)), exist_ok=True)
-            with open(path, "w", encoding="utf-8") as f:
+            with open(path, "w", encoding="utf-8", newline=self._newline) as f:
                 f.write(text)
             return f"OK: wrote {len(text)} characters to {path}"
         except Exception as e:

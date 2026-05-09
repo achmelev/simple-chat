@@ -95,7 +95,7 @@ tools:
   - cat
   - mkdir
   - write_file
-  - editfile
+  - edit_file
   - java
   - javac
   - mvn
