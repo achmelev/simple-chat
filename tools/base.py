@@ -58,7 +58,7 @@ class Tool(ABC):
         return self.pretty_xml_simple(f"<toolcall>\n<input>\n{input}\n</input>\n<output>\n{output}\n</output>\n</toolcall>")
 
     def short_format_call(self, arguments, result) -> str:
-        return self.name()
+        return f"Executing {self.name()}"
 
     def format_call(self, arguments, result):
         input=json.dumps(arguments, indent=4)

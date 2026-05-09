@@ -398,7 +398,7 @@ def main() -> None:
                     except Exception as e:
                         result = f"ERROR: {e}"
 
-                    print(f"Executing {tool_registry.short_format_call(name, args, result)}")
+                    print(tool_registry.short_format_call(name, args, result))
                    
                     if cfg.get("trace", {}).get("toolcall", False):
                         try:
