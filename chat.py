@@ -253,7 +253,8 @@ def stream_chat(messages, cfg, tool_registry):
         "tool_calls": [],
         "function_call": None,
         "finish_reason": None,
-        "tool_call_token": False
+        "tool_call_token": False,
+        "error_message": None
     }
 
     # Request a streaming response using the new SDK syntax.
@@ -278,6 +279,9 @@ def stream_chat(messages, cfg, tool_registry):
     output = LLMResponseOutput(cfg)
 
     for chunk in response:
+        if chunk.id is None:
+            message["error_message"] = getattr(chunk, "error_message", None)
+            return message
         if not reconstruct_chat_completion(message=message, chunk=chunk, cfg=cfg):
             continue
         output.onLLMMessage(message)
@@ -288,6 +292,8 @@ def stream_chat(messages, cfg, tool_registry):
 
 def validate_message(message, cfg):
     if not message["id"]:
+        if message.get("error_message"):
+            raise ResponseValidationError(message["error_message"])
         raise ResponseValidationError("Got no id in the response")
     if not message["role"]:
         raise ResponseValidationError("Got no id in the response")
