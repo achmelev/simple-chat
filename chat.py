@@ -29,6 +29,7 @@ from commands.reset_command import ResetCommand
 from commands.help_command import HelpCommand
 from commands.prompt_command import PromptCommand
 from commands.model_command import ModelCommand
+from commands.conversation_command import ConversationCommand
 from commands.registry import CommandRegistry, CommandInput
 from commands.base import CommandResult
 # Load YAML configuration. The PyYAML package is required.
@@ -258,22 +259,24 @@ def stream_chat(messages, cfg, tool_registry):
     }
 
     # Request a streaming response using the new SDK syntax.
+    openai_tools = tool_registry.get_openai_tools()
+    extra = {"tools": openai_tools} if openai_tools else {}
     if ("reasoning_effort" in cfg):
         response = client.chat.completions.create(
             model=cfg.get("model"),
             messages=messages,
-            tools=tool_registry.get_openai_tools(),
             stream=True,
             n=1,
-            reasoning_effort=cfg.get("reasoning_effort")
+            reasoning_effort=cfg.get("reasoning_effort"),
+            **extra
         )
     else:
-       response = client.chat.completions.create(
+        response = client.chat.completions.create(
             model=cfg.get("model"),
             messages=messages,
-            tools=tool_registry.get_openai_tools(),
             stream=True,
-            n=1
+            n=1,
+            **extra
         )
 
     output = LLMResponseOutput(cfg)
@@ -320,7 +323,12 @@ def append_message_to_conversation(conversation, message):
     if message["tool_calls"]:
         if (len(message["tool_calls"])>0):
             to_append["tool_calls"] = message["tool_calls"]
-    conversation.append(to_append)        
+    # If the last message is already from the assistant, merge rather than append a new entry.
+    if (conversation and conversation[-1]["role"] == "assistant"
+            and to_append["role"] == "assistant" and to_append.get("content")):
+        conversation[-1]["content"] += to_append["content"]
+    else:
+        conversation.append(to_append)        
 
 
 
@@ -354,6 +362,7 @@ def main() -> None:
         ResetCommand(conversation, tool_registry, cfg["system_prompt"]),
         PromptCommand(),
         ModelCommand(cfg),
+        ConversationCommand(conversation, tool_registry),
     ])
     command_registry.add(HelpCommand(command_registry))
 
@@ -368,7 +377,7 @@ def main() -> None:
                         print(result.output)
                     if result.user_message:
                         conversation.append({"role": "user", "content": result.user_message})
-                    else:
+                    elif not result.send_to_llm:
                         continue
                 else:
                     if result is not None:

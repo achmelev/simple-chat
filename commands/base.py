@@ -9,9 +9,11 @@ class CommandResult:
 
     output       -- text to print to the user (optional)
     user_message -- if set, injected into the conversation and sent to the LLM
+    send_to_llm  -- if True (and no user_message), send the current conversation to the LLM immediately
     """
     output: Optional[str] = None
     user_message: Optional[str] = None
+    send_to_llm: bool = False
 
 
 class Command(ABC):
