@@ -42,6 +42,8 @@ All configs are YAML. Required fields: `llm_url`, `api_key`, `model`, `system_pr
 
 The repo ships several ready-made configs for different providers and use cases (OpenAI, Anthropic, DeepInfra, Java coding agent). Copy one and adjust for a new provider. The active `config.yaml` is gitignored.
 
+**Any time a configuration key is added, removed, or changed, `CONFIGURATION.md` must be updated accordingly.**
+
 ## Adding a New Tool
 
 1. Create a file in `tools/` subclassing `Tool` from `tools/base.py`

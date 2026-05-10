@@ -35,68 +35,9 @@ source venv/bin/activate
 
 ## 🧩 Configuration
 
-Create a YAML config file:
-
-``` yaml
-llm_url: "https://api.openai.com/v1"
-api_key: "YOUR_API_KEY"
-system_prompt: "You are a helpful assistant."
-model: "YOUR_MODEL"
-
-tools:
-  - execute_python
-  - write_file
-  - edit_file
-
-reasoning_effort: "medium"
-```
-
-### Command-line tools
-
-Arbitrary executables can be exposed as tools without writing any code.
-Add a `command_tools` list to the config — each entry requires `binary`
-and `description`; `name` is optional and defaults to the binary's
-filename.
-
-``` yaml
-command_tools:
-  - binary: /usr/bin/mvn
-    description: "Runs Maven build commands (e.g. compile, test, package)"
-    name: maven          # optional — defaults to "mvn"
-  - binary: /usr/bin/git
-    description: "Runs git commands in a given directory"
-
-tools:
-  - maven
-  - git
-  - execute_python
-```
-
-Each tool accepts two arguments from the LLM: `working_directory` and
-`arguments` (a list of strings passed directly to the binary).
-
-### Environment variables
-
-`llm_url`, `api_key`, and `model` can be set via environment variables
-instead of (or as defaults for) the config file. Values in the config
-file take precedence.
-
-| Config key | Environment variable |
-|------------|----------------------|
-| `llm_url`  | `SC_LLM_URL`         |
-| `api_key`  | `SC_API_KEY`         |
-| `model`    | `SC_MODEL`           |
-
-The included `set-provider.sh` script sets all three at once by provider
-id:
-
-``` bash
-source set-provider.sh openai      # or: deepinfra, anthropic
-python chat.py --config config.yaml
-```
-
-The script can be sourced repeatedly to switch providers within the same
-shell session.
+Create a YAML config file and pass it with `--config`. See
+[CONFIGURATION.md](CONFIGURATION.md) for a full reference of all keys
+and subkeys.
 
 ------------------------------------------------------------------------
 
