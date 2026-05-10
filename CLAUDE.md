@@ -58,12 +58,4 @@ The repo ships several ready-made configs for different providers and use cases 
 
 ## Dockerfile
 
-The `Dockerfile` copies every source file individually into `/opt/simplechat/`. **Any time a source file is added or removed, the corresponding `COPY` line must be added or removed in the Dockerfile as well.** Currently copied files:
-
-- `requirements.txt`, `chat.py`, `llmrespoutput.py`
-- `tools/__init__.py`, `tools/base.py`, `tools/registry.py`
-- `tools/python_exec_tool.py`
-- `tools/command_line_tool.py`, `tools/configurable_command_tool.py`
-- `tools/write_file_tool.py`, `tools/edit_file_tool.py`
-- `commands/__init__.py`, `commands/base.py`, `commands/registry.py`
-- `commands/quit_command.py`, `commands/reset_command.py`
+The `Dockerfile` copies every source file individually into `/opt/simplechat/`. **Any time a Python source file is added or removed anywhere in the project, the corresponding `COPY` line must be added or removed in the Dockerfile as well.**

@@ -26,6 +26,7 @@ from tools.registry import ToolRegistry
 from llmrespoutput import LLMResponseOutput
 from commands.quit_command import QuitCommand
 from commands.reset_command import ResetCommand
+from commands.help_command import HelpCommand
 from commands.registry import CommandRegistry, CommandInput
 # Load YAML configuration. The PyYAML package is required.
 try:
@@ -83,7 +84,7 @@ def trim_to_none(value):
 def get_user_input():
     """Read user input. If the first line is a command (/name args...), return a CommandInput immediately.
     Otherwise collect lines until a blank line and return the joined string."""
-    print("You (finish with empty line. Type /quit to exit, /reset to start over):", flush=True)
+    print("You (finish with empty line. Type /quit to exit, /help for available commands):", flush=True)
     try:
         first_line = input()
     except EOFError:
@@ -343,6 +344,7 @@ def main() -> None:
         QuitCommand(tool_registry),
         ResetCommand(conversation, tool_registry, cfg["system_prompt"]),
     ])
+    command_registry.add(HelpCommand(command_registry))
 
     user_conversation = True
     while True:

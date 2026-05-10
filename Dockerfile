@@ -31,6 +31,12 @@ COPY tools/command_line_tool.py   /opt/simplechat/tools/
 COPY tools/configurable_command_tool.py /opt/simplechat/tools/
 COPY tools/write_file_tool.py           /opt/simplechat/tools/
 COPY tools/edit_file_tool.py           /opt/simplechat/tools/
+COPY commands/__init__.py              /opt/simplechat/commands/
+COPY commands/base.py                  /opt/simplechat/commands/
+COPY commands/registry.py              /opt/simplechat/commands/
+COPY commands/quit_command.py          /opt/simplechat/commands/
+COPY commands/reset_command.py         /opt/simplechat/commands/
+COPY commands/help_command.py          /opt/simplechat/commands/
 
 RUN python3 -m venv /opt/simplechat-venv \
     && /opt/simplechat-venv/bin/pip install --upgrade pip \
