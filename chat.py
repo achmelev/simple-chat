@@ -28,6 +28,7 @@ from commands.quit_command import QuitCommand
 from commands.reset_command import ResetCommand
 from commands.help_command import HelpCommand
 from commands.prompt_command import PromptCommand
+from commands.model_command import ModelCommand
 from commands.registry import CommandRegistry, CommandInput
 from commands.base import CommandResult
 # Load YAML configuration. The PyYAML package is required.
@@ -346,6 +347,7 @@ def main() -> None:
         QuitCommand(tool_registry),
         ResetCommand(conversation, tool_registry, cfg["system_prompt"]),
         PromptCommand(),
+        ModelCommand(cfg),
     ])
     command_registry.add(HelpCommand(command_registry))
 
