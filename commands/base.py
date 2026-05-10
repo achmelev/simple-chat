@@ -1,5 +1,17 @@
 from abc import ABC, abstractmethod
-from typing import List
+from dataclasses import dataclass
+from typing import List, Optional, Union
+
+
+@dataclass
+class CommandResult:
+    """Rich result from a command execution.
+
+    output       -- text to print to the user (optional)
+    user_message -- if set, injected into the conversation and sent to the LLM
+    """
+    output: Optional[str] = None
+    user_message: Optional[str] = None
 
 
 class Command(ABC):
@@ -20,6 +32,6 @@ class Command(ABC):
         pass
 
     @abstractmethod
-    def execute(self, arguments: List[str]) -> str:
-        """Execute the command with the given positional arguments. Returns a message to display, or None."""
+    def execute(self, arguments: List[str]) -> Union[str, CommandResult, None]:
+        """Execute the command. Returns a string to print, a CommandResult, or None."""
         pass

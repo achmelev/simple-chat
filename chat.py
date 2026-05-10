@@ -27,7 +27,9 @@ from llmrespoutput import LLMResponseOutput
 from commands.quit_command import QuitCommand
 from commands.reset_command import ResetCommand
 from commands.help_command import HelpCommand
+from commands.prompt_command import PromptCommand
 from commands.registry import CommandRegistry, CommandInput
+from commands.base import CommandResult
 # Load YAML configuration. The PyYAML package is required.
 try:
     import yaml
@@ -343,6 +345,7 @@ def main() -> None:
     command_registry = CommandRegistry([
         QuitCommand(tool_registry),
         ResetCommand(conversation, tool_registry, cfg["system_prompt"]),
+        PromptCommand(),
     ])
     command_registry.add(HelpCommand(command_registry))
 
@@ -352,13 +355,22 @@ def main() -> None:
             user_input = get_user_input()
             if isinstance(user_input, CommandInput):
                 result = command_registry.execute(user_input)
-                if result is not None:
-                    print(result)
-                continue
-            if not user_input:
+                if isinstance(result, CommandResult):
+                    if result.output:
+                        print(result.output)
+                    if result.user_message:
+                        conversation.append({"role": "user", "content": result.user_message})
+                    else:
+                        continue
+                else:
+                    if result is not None:
+                        print(result)
+                    continue
+            elif not user_input:
                 # Empty input – just continue prompting.
                 continue
-            conversation.append({"role": "user", "content": user_input})
+            else:
+                conversation.append({"role": "user", "content": user_input})
         # Stream assistant response.
         gotError = False
         try:
