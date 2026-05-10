@@ -33,6 +33,12 @@ Interactive commands during a session: `/quit`, `/reset`.
 - `registry.py` — `ToolRegistry` manages lifecycle (init/shutdown) and converts tools to OpenAI function format
 - `python_exec_tool.py` — executes Python code in a temporary venv (isolated per session, pip-installable, 60s timeout)
 
+**Command system** (`commands/`):
+- `base.py` — abstract `Command` class; subclasses implement `name()`, `short_description()`, `description()`, `execute(arguments)`
+- `registry.py` — `CommandRegistry` parses `/name arg1 arg2 ...` input and dispatches to the matching command
+- `quit_command.py` — shuts down tools and exits the process
+- `reset_command.py` — clears conversation history and reinitializes tools
+
 ## Configuration
 
 All configs are YAML. Required fields: `llm_url`, `api_key`, `model`, `system_prompt`. Optional: `tools` (list), `reasoning_effort` ("low"/"medium"/"high"), `reasoning_field` (default: `"reasoning_content"`), `use_finish_reason`, `ssl_verify` (default: `true` — set to `false` to disable SSL certificate verification, e.g. for local endpoints with self-signed certs), `tool_timeout` (default: `300` seconds — subprocess timeout for all tool executions), `trace` (optional map with subkeys):
@@ -59,3 +65,5 @@ The `Dockerfile` copies every source file individually into `/opt/simplechat/`. 
 - `tools/python_exec_tool.py`
 - `tools/command_line_tool.py`, `tools/configurable_command_tool.py`
 - `tools/write_file_tool.py`, `tools/edit_file_tool.py`
+- `commands/__init__.py`, `commands/base.py`, `commands/registry.py`
+- `commands/quit_command.py`, `commands/reset_command.py`

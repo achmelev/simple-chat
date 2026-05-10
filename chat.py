@@ -24,6 +24,9 @@ from tools.write_file_tool import WriteFileTool
 from tools.edit_file_tool import EditFileTool
 from tools.registry import ToolRegistry
 from llmrespoutput import LLMResponseOutput
+from commands.quit_command import QuitCommand
+from commands.reset_command import ResetCommand
+from commands.registry import CommandRegistry, CommandInput
 # Load YAML configuration. The PyYAML package is required.
 try:
     import yaml
@@ -78,18 +81,28 @@ def trim_to_none(value):
 
 
 def get_user_input():
-    """Read multiline user input terminated by an empty line.
+    """Read user input. If the first line is a command (/name args...), return a CommandInput immediately.
+    Otherwise collect lines until a blank line and return the joined string."""
+    print("You (finish with empty line. Type /quit to exit, /reset to start over):", flush=True)
+    try:
+        first_line = input()
+    except EOFError:
+        return ""
 
-    The function prints a prompt ("You: ") and then reads from stdin until a
-    blank line is entered. The collected lines are joined with newlines.
-    """
-    print("You (finish with empty line. Type /quit to end the session and /reset to start anew):", flush=True)
-    lines = []
+    stripped = first_line.strip()
+    if stripped.startswith("/"):
+        parts = stripped[1:].split()
+        if parts:
+            return CommandInput(name=parts[0].lower(), args=parts[1:])
+
+    if first_line == "":
+        return ""
+
+    lines = [first_line]
     while True:
         try:
             line = input()
         except EOFError:
-            # End of input stream (e.g., piped file). Return what we have.
             break
         if line == "":
             break
@@ -326,22 +339,24 @@ def main() -> None:
     tool_names = cfg.get("tools", None)
     tool_registry = ToolRegistry(all_tools=all_tools, tool_names=tool_names, command_tool_configs=cfg.get("command_tools"), tool_timeout=cfg.get("tool_timeout", 300))
 
+    command_registry = CommandRegistry([
+        QuitCommand(tool_registry),
+        ResetCommand(conversation, tool_registry, cfg["system_prompt"]),
+    ])
+
     user_conversation = True
     while True:
-        if user_conversation: 
-            user_msg = get_user_input()
-            if user_msg.strip().lower() == "/quit":
-                print("Exiting chat.")
-                tool_registry.shut_down()
-                break
-            elif user_msg.strip().lower() == "/reset":
-                conversation = [{"role": "system", "content": cfg["system_prompt"]}]
-                tool_registry.reset()
+        if user_conversation:
+            user_input = get_user_input()
+            if isinstance(user_input, CommandInput):
+                result = command_registry.execute(user_input)
+                if result is not None:
+                    print(result)
                 continue
-            if not user_msg:
+            if not user_input:
                 # Empty input – just continue prompting.
                 continue
-            conversation.append({"role": "user", "content": user_msg})
+            conversation.append({"role": "user", "content": user_input})
         # Stream assistant response.
         gotError = False
         try:
