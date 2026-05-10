@@ -25,6 +25,13 @@ class CommandRegistry:
 
     def execute(self, command_input: CommandInput) -> Optional[str]:
         """Execute a parsed command. Returns a message to display, or None."""
-        if command_input.name not in self._commands:
-            return f"Unknown command: /{command_input.name}"
-        return self._commands[command_input.name].execute(command_input.args)
+        name = command_input.name
+        if name in self._commands:
+            return self._commands[name].execute(command_input.args)
+        matches = [cmd for cmd in self._commands if cmd.startswith(name)]
+        if len(matches) == 1:
+            return self._commands[matches[0]].execute(command_input.args)
+        if len(matches) > 1:
+            alternatives = ", ".join(f"/{m}" for m in sorted(matches))
+            return f"Ambiguous command, possible alternatives: {alternatives}"
+        return f"Unknown command: /{name}"
