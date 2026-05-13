@@ -19,7 +19,7 @@ class ConfigurableCommandLineTool(CommandLineTool):
     def name(self) -> str:
         return self._name
 
-    def short_format_call(self, arguments, result) -> str:
+    def short_format_call(self, arguments) -> str:
         binary = os.path.basename(self._binary)
         args = arguments.get("arguments", [])
         working_dir = arguments.get("working_directory", ".")

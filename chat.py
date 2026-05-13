@@ -240,7 +240,7 @@ def stream_chat(messages, cfg, tool_registry):
     # Initialise the OpenAI client with the provided base URL and API key.
     ssl_verify = cfg.get("ssl_verify", True)
     client = OpenAI(
-        base_url=cfg["llm_url"].rstrip("/"),
+        base_url= cfg["llm_url"].rstrip("/"),
         api_key=cfg["api_key"],
         http_client=httpx.Client(verify=ssl_verify),
     )
@@ -439,13 +439,13 @@ def main() -> None:
                     except json.JSONDecodeError:
                         args = {}
 
+                    print(tool_registry.short_format_call(name, args))
+                    
                     try:
                         result = tool_registry.execute(name, args)
                     except Exception as e:
                         result = f"ERROR: {e}"
 
-                    print(tool_registry.short_format_call(name, args, result))
-                   
                     if cfg.get("trace", {}).get("toolcall", False):
                         try:
                             callString = tool_registry.format_call(name, args, result)

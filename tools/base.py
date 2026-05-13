@@ -59,7 +59,7 @@ class Tool(ABC):
     def create_tool_call_string(self,input, output):
         return self.pretty_xml_simple(f"<toolcall>\n<input>\n{input}\n</input>\n<output>\n{output}\n</output>\n</toolcall>")
 
-    def short_format_call(self, arguments, result) -> str:
+    def short_format_call(self, arguments) -> str:
         return f"Executing {self.name()}"
 
     def format_call(self, arguments, result):
