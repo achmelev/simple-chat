@@ -22,6 +22,7 @@ ENV PATH="/opt/maven/bin:${PATH}"
 # Copy SimpleChat source and install Python dependencies in an isolated venv
 COPY requirements.txt /opt/simplechat/
 COPY chat.py           /opt/simplechat/
+COPY mcpsrv.py         /opt/simplechat/
 COPY llmrespoutput.py  /opt/simplechat/
 COPY tools/__init__.py            /opt/simplechat/tools/
 COPY tools/base.py                /opt/simplechat/tools/
@@ -49,6 +50,11 @@ RUN python3 -m venv /opt/simplechat-venv \
 RUN printf '#!/bin/bash\nexec /opt/simplechat-venv/bin/python /opt/simplechat/chat.py "$@"\n' \
         > /usr/local/bin/simplechat \
     && chmod +x /usr/local/bin/simplechat
+
+# Install simplemcp wrapper so it can be called without the python prefix
+RUN printf '#!/bin/bash\nexec /opt/simplechat-venv/bin/python /opt/simplechat/mcpsrv.py "$@"\n' \
+        > /usr/local/bin/simplemcp \
+    && chmod +x /usr/local/bin/simplemcp
 
 RUN mkdir /workdir
 WORKDIR /workdir

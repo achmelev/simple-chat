@@ -5,14 +5,17 @@ Large Language Models (LLMs) via the OpenAI-compatible API.\
 It supports **streaming responses**, **tool execution**, and
 **configurable providers**.
 
+It also ships an **MCP server** (`mcpsrv.py`) that exposes the same
+configured tools to any MCP-compatible harness via SSE.
+
 ------------------------------------------------------------------------
 
 ## 📦 Prerequisites
 
--   Python 3.9+
--   API key for an OpenAI-compatible provider
+-   Python 3.10+
+-   API key for an OpenAI-compatible provider (not required for the MCP server)
 
-Required packages: - openai\>=1.0.0 - PyYAML\>=6.0
+Required packages: openai\>=1.0.0, PyYAML\>=6.0, mcp\>=1.0.0, uvicorn\>=0.30.0
 
 ------------------------------------------------------------------------
 
@@ -43,14 +46,27 @@ and subkeys.
 
 ## 🚀 Usage
 
+### Chat
+
 ``` bash
 python chat.py --config path/to/config.yaml
 ```
 
-### Commands
+#### Commands
 
 -   /quit → Exit
 -   /reset → Reset conversation
+
+### MCP Server
+
+``` bash
+python mcpsrv.py --config path/to/config.yaml
+```
+
+Starts an HTTP SSE server (default port 9090) that exposes the tools
+defined in the config to any MCP-compatible client. The MCP server uses
+only the `tools`, `command_tools`, `tool_timeout`, `target`, `trace`,
+and `mcp` config keys — no LLM connection keys are required.
 
 ------------------------------------------------------------------------
 
@@ -60,6 +76,7 @@ python chat.py --config path/to/config.yaml
 -   Tool execution
 -   Configurable LLM backend
 -   Multi-turn chat
+-   MCP SSE server for tool exposure to external harnesses
 
 ------------------------------------------------------------------------
 

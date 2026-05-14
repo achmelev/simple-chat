@@ -116,6 +116,32 @@ trace:
 
 ---
 
+## MCP server
+
+### `mcp`
+
+Controls the MCP (Model Context Protocol) server started by `mcp.py`. All subkeys are optional.
+
+```yaml
+mcp:
+  http_port: 9090
+```
+
+| Subkey | Type | Default | Description |
+|--------|------|---------|-------------|
+| `http_port` | integer | `9090` | TCP port the MCP SSE HTTP server listens on |
+
+The MCP server reads the same config file as `chat.py` but only uses `tools`, `command_tools`, `tool_timeout`, `target`, `trace`, and `mcp`. LLM connection keys (`llm_url`, `api_key`, `model`, `system_prompt`) are ignored.
+
+Run with:
+```bash
+python mcpsrv.py --config path/to/config.yaml
+# or inside Docker:
+simplemcp --config path/to/config.yaml
+```
+
+---
+
 ## Environment variables
 
 The three connection keys can be set as environment variables. Values in the config file take precedence over environment variables.
