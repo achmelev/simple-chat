@@ -55,6 +55,9 @@ def main():
         print(f"Failed to load config: {exc}")
         sys.exit(1)
 
+    port = cfg.get("mcp", {}).get("http_port", 9090)
+    print(f"MCP SSE server port = {port}")
+
     tool_registry = build_tool_registry(cfg)
 
     try:
@@ -95,8 +98,6 @@ def main():
             except Exception:
                 pass
         return [types.TextContent(type="text", text=result)]
-
-    port = cfg.get("mcp", {}).get("http_port", 9090)
 
     sse = SseServerTransport("/messages/")
 
