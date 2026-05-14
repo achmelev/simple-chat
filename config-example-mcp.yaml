@@ -1,0 +1,36 @@
+#The LLML URL, the API Key and the model name has to be passed via environment or inserted hiere 
+command_tools:
+  - binary: /bin/pwd
+    description: "Executes the pwd command"
+  - binary: /bin/ls
+    description: "Executes the ls command"
+  - binary: /usr/bin/grep
+    description: "Executes the grep utility"    
+  - binary: /usr/bin/cat
+    description: "Executes the cat utility"    
+  - binary: /usr/bin/mkdir
+    description: "Executes the mkdir command"          
+  - binary: /opt/java/openjdk/bin/java
+    description: "Executes the java runtime"
+  - binary: /opt/java/openjdk/bin/javac
+    description: "Executes the java compiler" 
+  - binary: /opt/maven/bin/mvn
+    description: "Executes the java compiler"            
+
+tools:
+  - pwd
+  - ls
+  - grep
+  - cat
+  - mkdir
+  - write_file
+  - edit_file
+  - java
+  - javac
+  - mvn
+
+trace:
+  toolcall: true
+
+
+

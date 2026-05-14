@@ -1,4 +1,7 @@
-"""MCP server that exposes SimpleChat tools via the Model Context Protocol over SSE.
+"""MCP server that exposes SimpleChat tools via the Model Context Protocol.
+
+Uses the Streamable HTTP transport (stateless mode) so tool calls are accepted
+without a prior initialize/notifications-initialized handshake.
 
 Usage:
     python mcpsrv.py --config path/to/config.yaml
@@ -10,6 +13,7 @@ Reads the same config format as chat.py but only uses:
 import sys
 import os
 import argparse
+import contextlib
 
 try:
     import yaml
@@ -45,7 +49,7 @@ def build_tool_registry(cfg):
 
 
 def main():
-    parser = argparse.ArgumentParser(description="MCP server exposing SimpleChat tools over SSE")
+    parser = argparse.ArgumentParser(description="MCP server exposing SimpleChat tools over HTTP")
     parser.add_argument("--config", required=True, help="Path to YAML configuration file")
     args = parser.parse_args()
 
@@ -56,17 +60,16 @@ def main():
         sys.exit(1)
 
     port = cfg.get("mcp", {}).get("http_port", 9090)
-    print(f"MCP SSE server port = {port}")
+    print(f"MCP server port = {port}")
 
     tool_registry = build_tool_registry(cfg)
 
     try:
         from mcp.server import Server
-        from mcp.server.sse import SseServerTransport
+        from mcp.server.streamable_http_manager import StreamableHTTPSessionManager
         import mcp.types as types
         from starlette.applications import Starlette
-        from starlette.routing import Route, Mount
-        from starlette.responses import Response
+        from starlette.routing import Route
         import uvicorn
     except ImportError as e:
         print(f"Required packages missing: {e}. Install with 'pip install -r requirements.txt'.")
@@ -99,23 +102,25 @@ def main():
                 pass
         return [types.TextContent(type="text", text=result)]
 
-    sse = SseServerTransport("/messages/")
+    session_manager = StreamableHTTPSessionManager(app=server, stateless=True)
 
-    async def handle_sse(request):
-        async with sse.connect_sse(
-            request.scope, request.receive, request._send
-        ) as streams:
-            await server.run(streams[0], streams[1], server.create_initialization_options())
-        return Response()
+    @contextlib.asynccontextmanager
+    async def lifespan(app):
+        async with session_manager.run():
+            yield
+
+    class _MCPApp:
+        async def __call__(self, scope, receive, send):
+            await session_manager.handle_request(scope, receive, send)
 
     starlette_app = Starlette(
+        lifespan=lifespan,
         routes=[
-            Route("/sse", endpoint=handle_sse),
-            Mount("/messages/", app=sse.handle_post_message),
-        ]
+            Route("/mcp", endpoint=_MCPApp()),
+        ],
     )
 
-    print(f"Starting MCP SSE server on port {port}")
+    print(f"Starting MCP server on http://0.0.0.0:{port}/mcp")
     uvicorn.run(starlette_app, host="0.0.0.0", port=port)
 
 

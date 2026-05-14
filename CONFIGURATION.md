@@ -140,6 +140,8 @@ python mcpsrv.py --config path/to/config.yaml
 simplemcp --config path/to/config.yaml
 ```
 
+The server exposes a single Streamable HTTP endpoint at `POST http://host:<http_port>/mcp`. Clients must send `Accept: application/json, text/event-stream`.
+
 ---
 
 ## Environment variables
