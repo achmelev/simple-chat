@@ -54,7 +54,10 @@ class CommandLineTool(Tool):
         except subprocess.TimeoutExpired:
             output = {"error": "Execution timed out"}
         except FileNotFoundError:
-            output = {"error": f"Binary not found: {self.binary_path()}"}
+            if not os.path.isdir(working_directory):
+                output = {"error": f"Working directory not found: {working_directory}"}
+            else:
+                output = {"error": f"Binary not found: {self.binary_path()}"}
         except Exception as e:
             output = {"error": str(e)}
 
