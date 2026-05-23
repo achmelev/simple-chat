@@ -97,15 +97,19 @@ class BenchmarkCommand(Command):
 
             os.chdir(workdir)
             start_time = time.time()
+            timed_out = False
             try:
-                self._run_llm_loop(prompt, time_limit_seconds, start_time)
+                timed_out = self._run_llm_loop(prompt, time_limit_seconds, start_time)
             except Exception as e:
                 print(f"[Benchmark] Error running task {task_name}: {e}")
                 traceback.print_exc()
             finally:
                 os.chdir(original_dir)
 
-            score = self._calculate_score(score_py_path, workdir)
+            if timed_out:
+                score = 0.0
+            else:
+                score = self._calculate_score(score_py_path, workdir)
             shutil.rmtree(workdir, ignore_errors=True)
             print(f"[Benchmark] Score for {task_name}: {score:.3f}")
             results.append((task_name, description, score))
@@ -123,13 +127,14 @@ class BenchmarkCommand(Command):
 
         return None
 
-    def _run_llm_loop(self, prompt: str, time_limit_seconds: float, start_time: float) -> None:
+    def _run_llm_loop(self, prompt: str, time_limit_seconds: float, start_time: float) -> bool:
+        """Run the LLM conversation loop. Returns True if the time limit was exceeded."""
         self._conversation.append({"role": "user", "content": prompt})
 
         while True:
             if time.time() - start_time >= time_limit_seconds:
                 print("\n[Benchmark] Time limit reached before LLM call")
-                break
+                return True
 
             try:
                 message = self._stream_chat(
@@ -139,37 +144,37 @@ class BenchmarkCommand(Command):
                 )
             except Exception as e:
                 print(f"\n[Benchmark] LLM error: {e}")
-                break
+                return False
 
             if message.get("timed_out"):
                 print("\n[Benchmark] Time limit exceeded during streaming")
                 self._append_message(self._conversation, message)
-                break
+                return True
 
             try:
                 self._validate_message(message, self._cfg)
             except Exception as e:
                 print(f"\n[Benchmark] Response validation error: {e}")
-                break
+                return False
 
             self._append_message(self._conversation, message)
 
             if self._cfg.get("use_finish_reason", True):
                 finish_reason = message.get("finish_reason")
                 if finish_reason in ("stop", "length", "content_filter"):
-                    break
+                    return False
                 elif finish_reason == "tool_calls":
                     if not self._execute_tool_calls(message, start_time, time_limit_seconds):
-                        break
+                        return True
                 else:
-                    break
+                    return False
             else:
                 tool_calls = message.get("tool_calls", [])
                 if tool_calls:
                     if not self._execute_tool_calls(message, start_time, time_limit_seconds):
-                        break
+                        return True
                 else:
-                    break
+                    return False
 
     def _execute_tool_calls(self, message: dict, start_time: float,
                              time_limit_seconds: float) -> bool:
