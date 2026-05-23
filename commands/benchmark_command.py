@@ -76,6 +76,7 @@ class BenchmarkCommand(Command):
             description = task_config.get("description", task_name)
             prompt = task_config.get("prompt", "")
             time_minutes = task_config.get("time", 5)
+            difficulty = float(task_config.get("difficulty", 1.0))
             time_limit_seconds = time_minutes * 60
 
             if not prompt:
@@ -111,18 +112,19 @@ class BenchmarkCommand(Command):
             else:
                 score = self._calculate_score(score_py_path, workdir)
             shutil.rmtree(workdir, ignore_errors=True)
-            print(f"[Benchmark] Score for {task_name}: {score:.3f}")
-            results.append((task_name, description, score))
+            print(f"[Benchmark] Score for {task_name}: {score:.3f}  (difficulty: {difficulty})")
+            results.append((task_name, description, score, difficulty))
 
         if not results:
             return "No tasks were completed."
 
         print(f"\n{'='*60}")
         print("[Benchmark] Final Results:")
-        for task_name, description, score in results:
-            print(f"  {task_name}: {score:.3f}  ({description})")
-        avg = sum(s for _, _, s in results) / len(results)
-        print(f"  Average score: {avg:.3f}")
+        for task_name, description, score, difficulty in results:
+            print(f"  {task_name}: {score:.3f}  (difficulty: {difficulty}, {description})")
+        total_weight = sum(d for _, _, _, d in results)
+        weighted_avg = sum(s * d for _, _, s, d in results) / total_weight
+        print(f"  Weighted average score: {weighted_avg:.3f}")
         print(f"{'='*60}")
 
         return None
