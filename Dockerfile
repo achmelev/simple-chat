@@ -41,6 +41,7 @@ COPY commands/help_command.py          /opt/simplechat/commands/
 COPY commands/prompt_command.py        /opt/simplechat/commands/
 COPY commands/model_command.py         /opt/simplechat/commands/
 COPY commands/conversation_command.py  /opt/simplechat/commands/
+COPY commands/benchmark_command.py     /opt/simplechat/commands/
 
 RUN python3 -m venv /opt/simplechat-venv \
     && /opt/simplechat-venv/bin/pip install --upgrade pip \

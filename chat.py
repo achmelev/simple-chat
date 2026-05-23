@@ -17,6 +17,7 @@ After the response completes, the prompt appears again.
 import argparse
 import sys
 import json
+import time
 import httpx
 import traceback
 from tools.python_exec_tool import PythonExecTool
@@ -30,6 +31,7 @@ from commands.help_command import HelpCommand
 from commands.prompt_command import PromptCommand
 from commands.model_command import ModelCommand
 from commands.conversation_command import ConversationCommand
+from commands.benchmark_command import BenchmarkCommand
 from commands.registry import CommandRegistry, CommandInput
 from commands.base import CommandResult
 # Load YAML configuration. The PyYAML package is required.
@@ -235,7 +237,7 @@ def reconstruct_chat_completion(message, chunk, cfg):
 
     return True
 
-def stream_chat(messages, cfg, tool_registry):
+def stream_chat(messages, cfg, tool_registry, time_limit_seconds=None, start_time=None):
 
     # Initialise the OpenAI client with the provided base URL and API key.
     ssl_verify = cfg.get("ssl_verify", True)
@@ -255,7 +257,8 @@ def stream_chat(messages, cfg, tool_registry):
         "function_call": None,
         "finish_reason": None,
         "tool_call_token": False,
-        "error_message": None
+        "error_message": None,
+        "timed_out": False,
     }
 
     # Request a streaming response using the new SDK syntax.
@@ -288,6 +291,15 @@ def stream_chat(messages, cfg, tool_registry):
         if not reconstruct_chat_completion(message=message, chunk=chunk, cfg=cfg):
             continue
         output.onLLMMessage(message)
+
+        if time_limit_seconds is not None and start_time is not None:
+            if time.time() - start_time >= time_limit_seconds:
+                message["timed_out"] = True
+                try:
+                    response.close()
+                except Exception:
+                    pass
+                break
 
     output.onLLMMessage(None)
 
@@ -363,6 +375,15 @@ def main() -> None:
         PromptCommand(),
         ModelCommand(cfg),
         ConversationCommand(conversation, tool_registry),
+        BenchmarkCommand(
+            conversation=conversation,
+            tool_registry=tool_registry,
+            cfg=cfg,
+            system_prompt=cfg["system_prompt"],
+            stream_chat_fn=stream_chat,
+            validate_message_fn=validate_message,
+            append_message_fn=append_message_to_conversation,
+        ),
     ])
     command_registry.add(HelpCommand(command_registry))
 
