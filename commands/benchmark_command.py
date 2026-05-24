@@ -3,6 +3,7 @@ import os
 import shutil
 import time
 import traceback
+from datetime import datetime
 from typing import Callable, List, Union
 
 import yaml
@@ -89,7 +90,8 @@ class BenchmarkCommand(Command):
             print(f"[Benchmark] Time limit: {time_minutes} min")
             print(f"{'='*60}")
 
-            workdir = os.path.join(task_dir, "workdir")
+            timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+            workdir = os.path.join(task_dir, f"workdir_{timestamp}")
             os.makedirs(workdir, exist_ok=True)
 
             self._conversation.clear()
@@ -115,7 +117,10 @@ class BenchmarkCommand(Command):
                 score = 0.0
             else:
                 score = self._calculate_score(score_py_path, workdir)
-            shutil.rmtree(workdir, ignore_errors=True)
+            if score == 1.0:
+                shutil.rmtree(workdir, ignore_errors=True)
+            else:
+                print(f"[Benchmark] Work dir kept for inspection: {workdir}")
             print(f"[Benchmark] Score for {task_name}: {score:.3f}  (difficulty: {difficulty})")
             results.append((task_name, description, score, difficulty))
 
