@@ -4,10 +4,11 @@ from commands.base import Command
 
 class ResetCommand(Command):
 
-    def __init__(self, conversation: list, tool_registry, system_prompt: str):
+    def __init__(self, conversation: list, tool_registry, system_prompt: str, session_storage: dict):
         self._conversation = conversation
         self._tool_registry = tool_registry
         self._system_prompt = system_prompt
+        self._session_storage = session_storage
 
     def name(self) -> str:
         return "reset"
@@ -22,4 +23,5 @@ class ResetCommand(Command):
         self._conversation.clear()
         self._conversation.append({"role": "system", "content": self._system_prompt})
         self._tool_registry.reset()
+        self._session_storage.clear()
         return "Conversation reset."

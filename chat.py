@@ -363,6 +363,7 @@ def main() -> None:
 
     # Initialise the conversation with the system prompt.
     conversation = [{"role": "system", "content": cfg["system_prompt"]}]
+    session_storage = {}
 
     #Tools initializing
     all_tools = [PythonExecTool(), WriteFileTool(cfg.get("target")), EditFileTool(cfg.get("target"))]
@@ -371,7 +372,7 @@ def main() -> None:
 
     command_registry = CommandRegistry([
         QuitCommand(tool_registry),
-        ResetCommand(conversation, tool_registry, cfg["system_prompt"]),
+        ResetCommand(conversation, tool_registry, cfg["system_prompt"], session_storage),
         PromptCommand(),
         ModelCommand(cfg),
         ConversationCommand(conversation, tool_registry),
