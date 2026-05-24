@@ -96,6 +96,10 @@ class BenchmarkCommand(Command):
             self._conversation.append({"role": "system", "content": self._system_prompt})
             self._tool_registry.reset()
 
+            print("You (finish with empty line. Type /quit to exit, /help for available commands):")
+            print(prompt)
+            print()
+
             os.chdir(workdir)
             start_time = time.time()
             timed_out = False
