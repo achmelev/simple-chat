@@ -41,17 +41,24 @@ class BenchmarkCommand(Command):
 
     def execute(self, arguments: List[str]) -> Union[str, CommandResult, None]:
         if not arguments:
-            return "Usage: /benchmark <directory>"
+            return "Usage: /benchmark <directory> [time_factor]"
 
         benchmark_dir = arguments[0]
         if not os.path.isdir(benchmark_dir):
             return f"Not a directory: {benchmark_dir}"
 
+        time_factor = 1.0
+        if len(arguments) >= 2:
+            try:
+                time_factor = float(arguments[1])
+            except ValueError:
+                return f"Invalid time factor: {arguments[1]}"
+
         original_dir = os.getcwd()
 
         # Single-task mode: config.yaml lives directly in the given directory
         if os.path.isfile(os.path.join(benchmark_dir, "config.yaml")):
-            self._run_task(benchmark_dir, original_dir)
+            self._run_task(benchmark_dir, original_dir, time_factor)
             return None
 
         # Multi-task mode: each subdirectory is a task
@@ -66,7 +73,7 @@ class BenchmarkCommand(Command):
 
         results = []
         for task_dir in task_dirs:
-            result = self._run_task(task_dir, original_dir)
+            result = self._run_task(task_dir, original_dir, time_factor)
             if result is not None:
                 results.append(result)
 
@@ -84,7 +91,7 @@ class BenchmarkCommand(Command):
 
         return None
 
-    def _run_task(self, task_dir: str, original_dir: str):
+    def _run_task(self, task_dir: str, original_dir: str, time_factor: float = 1.0):
         """Run a single benchmark task. Returns (task_name, description, score, difficulty) or None on skip."""
         task_name = os.path.basename(task_dir)
         config_path = os.path.join(task_dir, "config.yaml")
@@ -102,7 +109,7 @@ class BenchmarkCommand(Command):
 
         description = task_config.get("description", task_name)
         prompt = task_config.get("prompt", "")
-        time_minutes = task_config.get("time", 5)
+        time_minutes = task_config.get("time", 5) * time_factor
         difficulty = float(task_config.get("difficulty", 1.0))
         time_limit_seconds = time_minutes * 60
 
@@ -113,7 +120,7 @@ class BenchmarkCommand(Command):
         print(f"\n{'='*60}")
         print(f"[Benchmark] Task: {task_name}")
         print(f"[Benchmark] Description: {description}")
-        print(f"[Benchmark] Time limit: {time_minutes} min")
+        print(f"[Benchmark] Time limit: {time_minutes:.1f} min")
         print(f"{'='*60}")
 
         timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
