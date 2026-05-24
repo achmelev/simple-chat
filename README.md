@@ -57,6 +57,10 @@ python chat.py --config path/to/config.yaml
 -   /quit → Exit
 -   /reset → Reset conversation
 
+### Benchmark
+
+Run the `/benchmark` command inside a chat session to evaluate the LLM against a set of tasks. See [BENCHMARK.md](BENCHMARK.md) for the full reference including task format, scoring, and the included Java test suite.
+
 ### MCP Server
 
 ``` bash
@@ -77,6 +81,7 @@ and `mcp` config keys — no LLM connection keys are required.
 -   Configurable LLM backend
 -   Multi-turn chat
 -   MCP SSE server for tool exposure to external harnesses
+-   [LLM benchmarking](BENCHMARK.md) with pluggable task suites and weighted scoring
 
 ------------------------------------------------------------------------
 
