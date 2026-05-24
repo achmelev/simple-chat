@@ -15,7 +15,7 @@ class BenchmarkCommand(Command):
 
     def __init__(self, conversation: list, tool_registry, cfg: dict, system_prompt: str,
                  stream_chat_fn: Callable, validate_message_fn: Callable,
-                 append_message_fn: Callable):
+                 append_message_fn: Callable, session_storage: dict):
         self._conversation = conversation
         self._tool_registry = tool_registry
         self._cfg = cfg
@@ -23,6 +23,7 @@ class BenchmarkCommand(Command):
         self._stream_chat = stream_chat_fn
         self._validate_message = validate_message_fn
         self._append_message = append_message_fn
+        self._session_storage = session_storage
 
     def name(self) -> str:
         return "benchmark"
@@ -171,6 +172,7 @@ class BenchmarkCommand(Command):
                     self._conversation, self._cfg, self._tool_registry,
                     time_limit_seconds=time_limit_seconds,
                     start_time=start_time,
+                    session_storage=self._session_storage,
                 )
             except Exception as e:
                 print(f"\n[Benchmark] LLM error: {e}")

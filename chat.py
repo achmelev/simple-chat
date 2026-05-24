@@ -136,7 +136,38 @@ def check_unknown_delta_unknown_attributes(delta):
             print("WARN: Model returns unknown message attribute "+attr)
             known_delta_attributes.append(attr) 
 
-def reconstruct_chat_completion(message, chunk, cfg):
+def _resolve_reasoning_token(delta, content_token, cfg, session_storage):
+    global_field = cfg.get("reasoning_field", "reasoning_content")
+
+    if session_storage is None:
+        return trim_to_none(getattr(delta, global_field, None))
+
+    if "reasoning_field" in session_storage:
+        return trim_to_none(getattr(delta, session_storage["reasoning_field"], None))
+
+    # Key not yet set — always try the global setting first
+    value = trim_to_none(getattr(delta, global_field, None))
+    if value is not None:
+        session_storage["reasoning_field"] = global_field
+        return value
+
+    # Global setting produced nothing; if content is also absent, search for any
+    # field whose name starts with "reasoning" (up to 10 attempts total)
+    if content_token is None:
+        attempts = session_storage.get("reasoning_field_attempts", 0)
+        if attempts < 10:
+            session_storage["reasoning_field_attempts"] = attempts + 1
+            for attr in vars(delta):
+                if attr.startswith("reasoning"):
+                    val = trim_to_none(getattr(delta, attr, None))
+                    if val is not None:
+                        session_storage["reasoning_field"] = attr
+                        return val
+
+    return None
+
+
+def reconstruct_chat_completion(message, chunk, cfg, session_storage=None):
 
     
      # -- Id ---
@@ -156,19 +187,11 @@ def reconstruct_chat_completion(message, chunk, cfg):
 
     check_unknown_delta_unknown_attributes(delta=delta)
 
-    reasoning_field = cfg.get("reasoning_field", "reasoning_content")
-
     # ---- role ----
     validate_and_set_unique_field(message=message, name="role", value=delta.role)
 
-    if hasattr(delta, "content"):
-        content_token = trim_to_none(delta.content)
-    else:
-        content_token = None
-    if hasattr(delta, reasoning_field):
-        reasoning_content_token = trim_to_none(getattr(delta, reasoning_field))
-    else:
-        reasoning_content_token = None    
+    content_token = trim_to_none(delta.content) if hasattr(delta, "content") else None
+    reasoning_content_token = _resolve_reasoning_token(delta, content_token, cfg, session_storage)
     message["content_token"] = content_token
     message["reasoning_content_token"] = reasoning_content_token
     message["tool_call_token"] = False
@@ -237,7 +260,7 @@ def reconstruct_chat_completion(message, chunk, cfg):
 
     return True
 
-def stream_chat(messages, cfg, tool_registry, time_limit_seconds=None, start_time=None):
+def stream_chat(messages, cfg, tool_registry, time_limit_seconds=None, start_time=None, session_storage=None):
 
     # Initialise the OpenAI client with the provided base URL and API key.
     ssl_verify = cfg.get("ssl_verify", True)
@@ -288,7 +311,7 @@ def stream_chat(messages, cfg, tool_registry, time_limit_seconds=None, start_tim
         if chunk.id is None:
             message["error_message"] = getattr(chunk, "error_message", None)
             return message
-        if not reconstruct_chat_completion(message=message, chunk=chunk, cfg=cfg):
+        if not reconstruct_chat_completion(message=message, chunk=chunk, cfg=cfg, session_storage=session_storage):
             continue
         output.onLLMMessage(message)
 
@@ -384,6 +407,7 @@ def main() -> None:
             stream_chat_fn=stream_chat,
             validate_message_fn=validate_message,
             append_message_fn=append_message_to_conversation,
+            session_storage=session_storage,
         ),
     ])
     command_registry.add(HelpCommand(command_registry))
@@ -413,7 +437,7 @@ def main() -> None:
         # Stream assistant response.
         gotError = False
         try:
-            message = stream_chat(conversation, cfg, tool_registry=tool_registry)
+            message = stream_chat(conversation, cfg, tool_registry=tool_registry, session_storage=session_storage)
             validate_message(message=message, cfg=cfg)
         except Exception as e:
             gotError = True
