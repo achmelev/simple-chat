@@ -47,6 +47,14 @@ class BenchmarkCommand(Command):
         if not os.path.isdir(benchmark_dir):
             return f"Not a directory: {benchmark_dir}"
 
+        original_dir = os.getcwd()
+
+        # Single-task mode: config.yaml lives directly in the given directory
+        if os.path.isfile(os.path.join(benchmark_dir, "config.yaml")):
+            self._run_task(benchmark_dir, original_dir)
+            return None
+
+        # Multi-task mode: each subdirectory is a task
         task_dirs = sorted([
             os.path.join(benchmark_dir, d)
             for d in os.listdir(benchmark_dir)
@@ -57,72 +65,10 @@ class BenchmarkCommand(Command):
             return f"No task subdirectories found in: {benchmark_dir}"
 
         results = []
-        original_dir = os.getcwd()
-
         for task_dir in task_dirs:
-            task_name = os.path.basename(task_dir)
-            config_path = os.path.join(task_dir, "config.yaml")
-            score_py_path = os.path.join(task_dir, "score.py")
-
-            if not os.path.isfile(config_path):
-                print(f"[Benchmark] Skipping {task_name}: missing config.yaml")
-                continue
-            if not os.path.isfile(score_py_path):
-                print(f"[Benchmark] Skipping {task_name}: missing score.py")
-                continue
-
-            with open(config_path, "r", encoding="utf-8") as f:
-                task_config = yaml.safe_load(f) or {}
-
-            description = task_config.get("description", task_name)
-            prompt = task_config.get("prompt", "")
-            time_minutes = task_config.get("time", 5)
-            difficulty = float(task_config.get("difficulty", 1.0))
-            time_limit_seconds = time_minutes * 60
-
-            if not prompt:
-                print(f"[Benchmark] Skipping {task_name}: missing prompt in config.yaml")
-                continue
-
-            print(f"\n{'='*60}")
-            print(f"[Benchmark] Task: {task_name}")
-            print(f"[Benchmark] Description: {description}")
-            print(f"[Benchmark] Time limit: {time_minutes} min")
-            print(f"{'='*60}")
-
-            timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-            workdir = os.path.join(task_dir, f"workdir_{timestamp}")
-            os.makedirs(workdir, exist_ok=True)
-
-            self._conversation.clear()
-            self._conversation.append({"role": "system", "content": self._system_prompt})
-            self._tool_registry.reset()
-
-            print("You (finish with empty line. Type /quit to exit, /help for available commands):")
-            print(prompt)
-            print()
-
-            os.chdir(workdir)
-            start_time = time.time()
-            timed_out = False
-            try:
-                timed_out = self._run_llm_loop(prompt, time_limit_seconds, start_time)
-            except Exception as e:
-                print(f"[Benchmark] Error running task {task_name}: {e}")
-                traceback.print_exc()
-            finally:
-                os.chdir(original_dir)
-
-            if timed_out:
-                score = 0.0
-            else:
-                score = self._calculate_score(score_py_path, workdir)
-            if score == 1.0:
-                shutil.rmtree(workdir, ignore_errors=True)
-            else:
-                print(f"[Benchmark] Work dir kept for inspection: {workdir}")
-            print(f"[Benchmark] Score for {task_name}: {score:.3f}  (difficulty: {difficulty})")
-            results.append((task_name, description, score, difficulty))
+            result = self._run_task(task_dir, original_dir)
+            if result is not None:
+                results.append(result)
 
         if not results:
             return "No tasks were completed."
@@ -137,6 +83,72 @@ class BenchmarkCommand(Command):
         print(f"{'='*60}")
 
         return None
+
+    def _run_task(self, task_dir: str, original_dir: str):
+        """Run a single benchmark task. Returns (task_name, description, score, difficulty) or None on skip."""
+        task_name = os.path.basename(task_dir)
+        config_path = os.path.join(task_dir, "config.yaml")
+        score_py_path = os.path.join(task_dir, "score.py")
+
+        if not os.path.isfile(config_path):
+            print(f"[Benchmark] Skipping {task_name}: missing config.yaml")
+            return None
+        if not os.path.isfile(score_py_path):
+            print(f"[Benchmark] Skipping {task_name}: missing score.py")
+            return None
+
+        with open(config_path, "r", encoding="utf-8") as f:
+            task_config = yaml.safe_load(f) or {}
+
+        description = task_config.get("description", task_name)
+        prompt = task_config.get("prompt", "")
+        time_minutes = task_config.get("time", 5)
+        difficulty = float(task_config.get("difficulty", 1.0))
+        time_limit_seconds = time_minutes * 60
+
+        if not prompt:
+            print(f"[Benchmark] Skipping {task_name}: missing prompt in config.yaml")
+            return None
+
+        print(f"\n{'='*60}")
+        print(f"[Benchmark] Task: {task_name}")
+        print(f"[Benchmark] Description: {description}")
+        print(f"[Benchmark] Time limit: {time_minutes} min")
+        print(f"{'='*60}")
+
+        timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+        workdir = os.path.join(task_dir, f"workdir_{timestamp}")
+        os.makedirs(workdir, exist_ok=True)
+
+        self._conversation.clear()
+        self._conversation.append({"role": "system", "content": self._system_prompt})
+        self._tool_registry.reset()
+
+        print("You (finish with empty line. Type /quit to exit, /help for available commands):")
+        print(prompt)
+        print()
+
+        os.chdir(workdir)
+        start_time = time.time()
+        timed_out = False
+        try:
+            timed_out = self._run_llm_loop(prompt, time_limit_seconds, start_time)
+        except Exception as e:
+            print(f"[Benchmark] Error running task {task_name}: {e}")
+            traceback.print_exc()
+        finally:
+            os.chdir(original_dir)
+
+        if timed_out:
+            score = 0.0
+        else:
+            score = self._calculate_score(score_py_path, workdir)
+        if score == 1.0:
+            shutil.rmtree(workdir, ignore_errors=True)
+        else:
+            print(f"[Benchmark] Work dir kept for inspection: {workdir}")
+        print(f"[Benchmark] Score for {task_name}: {score:.3f}  (difficulty: {difficulty})")
+        return (task_name, description, score, difficulty)
 
     def _run_llm_loop(self, prompt: str, time_limit_seconds: float, start_time: float) -> bool:
         """Run the LLM conversation loop. Returns True if the time limit was exceeded."""
