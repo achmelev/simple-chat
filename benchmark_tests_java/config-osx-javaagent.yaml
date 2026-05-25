@@ -99,9 +99,6 @@ tools:
   - java
   - javac
 
-reasoning_field: "reasoning"
-reasoning_effort: "medium"
-
 trace:
   thinking: false
   toolcall: false
