@@ -1,0 +1,33 @@
+description: Multi-client TCP echo server in Java
+prompt: |
+  Write a Java program that implements a multi-client TCP echo server.
+
+  The program takes one command-line argument:
+    args[0]: port number to listen on
+
+  The server must:
+  - Listen for incoming TCP connections on the given port
+  - Handle each client connection in a separate thread so multiple clients
+    can be served concurrently
+  - For each line received from a client, send the exact same line back
+    followed by a newline character (echo)
+  - Close the client connection when the client sends "QUIT" or disconnects
+  - Keep accepting new connections until the process is terminated
+
+  Print NOTHING to stdout (the server runs silently).
+
+  Requirements:
+  - The main class must be org.network.EchoServer
+  - Compile the class files into the directory bin/ (use javac -d bin)
+  - Create the bin/ directory before compiling if it does not exist yet
+
+  Please create the Java source file and compile it. Then write a second class
+  org.network.EchoServerTest (in the same bin/ output directory) that:
+  - starts EchoServer in a background thread on a free port,
+  - connects to it as a client, sends a few lines, and checks the echoed responses,
+  - stops the server thread after the checks,
+  - prints "ALL TESTS PASSED" if everything is correct, otherwise prints what failed.
+
+  Run the test class with the java tool to verify correctness.
+time: 10
+difficulty: 6.0

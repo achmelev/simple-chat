@@ -1,0 +1,18 @@
+description: Java program counting word frequencies in a text file
+prompt: |
+  Write a Java program that reads a text file (path given as args[0]) and counts the
+  frequency of each word. Rules:
+  - Words are sequences of letters (a-z, A-Z) only; ignore all other characters
+  - Treat words case-insensitively (convert to lowercase)
+  - Output one "word: count" line per word, sorted by count descending
+  - For equal counts, sort words alphabetically ascending
+  - Print ONLY these lines, nothing else
+
+  Requirements:
+  - The main class must be org.wordcount.WordCount
+  - Compile the class files into the directory bin/ (use javac -d bin)
+  - Create the bin/ directory before compiling if it does not exist yet
+
+  Please create the Java source file, compile it, and verify it works correctly.
+time: 5
+difficulty: 2.0

@@ -1,0 +1,23 @@
+description: Thread-safe concurrent counter in Java
+prompt: |
+  Write a Java program implementing a thread-safe counter.
+
+  The program takes two command-line arguments:
+    args[0]: number of threads (N)
+    args[1]: number of increments per thread (M)
+
+  Create N threads, each incrementing a shared counter M times.
+  Wait for all threads to complete, then print the final counter value.
+  The result must always equal N × M regardless of thread interleaving.
+  Print ONLY the final number, nothing else.
+
+  Requirements:
+  - The main class must be org.concurrent.ConcurrentCounter
+  - Use proper synchronization (e.g. synchronized keyword, AtomicInteger, or Lock)
+  - Compile the class files into the directory bin/ (use javac -d bin)
+  - Create the bin/ directory before compiling if it does not exist yet
+
+  Please create the Java source file, compile it, and verify it is correct by running it
+  with several thread/increment combinations.
+time: 8
+difficulty: 4.0

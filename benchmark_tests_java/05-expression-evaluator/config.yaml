@@ -1,0 +1,26 @@
+description: Java arithmetic expression evaluator with correct operator precedence
+prompt: |
+  Implement an arithmetic expression evaluator in Java that correctly handles
+  operator precedence and parentheses.
+
+  The program reads an arithmetic expression from args[0] and prints its integer result.
+  Supported:
+  - Positive integer operands
+  - Operators: + - * /  (integer division, truncating toward zero)
+  - Parentheses to override precedence
+  - Standard precedence: * and / before + and -; left-to-right for equal precedence
+  - Spaces may appear anywhere in the expression
+
+  Print ONLY the integer result, nothing else.
+  Do NOT use ScriptEngine, JavaScript eval, or any expression-evaluation library —
+  implement the parser yourself (e.g. recursive descent or shunting-yard algorithm).
+
+  Requirements:
+  - The main class must be org.expr.ExpressionEvaluator
+  - Compile the class files into the directory bin/ (use javac -d bin)
+  - Create the bin/ directory before compiling if it does not exist yet
+
+  Please create the Java source file, compile it, and verify it works correctly with
+  expressions that test precedence and parentheses.
+time: 12
+difficulty: 5.0

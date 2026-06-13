@@ -1,0 +1,15 @@
+description: Java program computing Fibonacci numbers
+prompt: |
+  Write a Java program that reads a positive integer N from the command line (args[0])
+  and prints the Nth Fibonacci number (1-indexed: fib(1)=1, fib(2)=1, fib(3)=2, fib(4)=3, fib(5)=5).
+  Print ONLY the number, nothing else.
+
+  Requirements:
+  - The main class must be org.fibonacci.FibonacciCalculator
+  - Compile the class files into the directory bin/ (use javac -d bin)
+  - Create the bin/ directory before compiling if it does not exist yet
+
+  Please create the Java source file, compile it, and verify it works correctly by running
+  it with several test values (e.g. N=1, N=5, N=10) and printing the results.
+time: 3
+difficulty: 1.0

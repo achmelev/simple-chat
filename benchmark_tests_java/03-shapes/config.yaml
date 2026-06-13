@@ -1,0 +1,33 @@
+description: Java OOP program computing shape areas using inheritance and polymorphism
+prompt: |
+  Implement shape area calculation in Java using object-oriented design.
+
+  Read shape definitions from a file (path given as args[0]). Each line has one of these formats:
+    circle <radius>
+    rectangle <width> <height>
+    triangle <base> <height>
+
+  Compute the area of each shape:
+    Circle:    π × radius²
+    Rectangle: width × height
+    Triangle:  0.5 × base × height
+
+  Output each shape on its own line, sorted by area ascending, in this exact format:
+    <ShapeType> <area>
+  where <ShapeType> is "Circle", "Rectangle", or "Triangle" and <area> is formatted to
+  exactly 2 decimal places using a dot as the decimal separator. Print ONLY these lines,
+  nothing else.
+
+  The output must be independent of the system locale. Use Locale.US explicitly when
+  formatting numbers (e.g. String.format(Locale.US, "%.2f", area)) so that the decimal
+  separator is always a dot regardless of the environment the program runs in.
+
+  Requirements:
+  - Use an abstract base class org.shapes.Shape with subclasses Circle, Rectangle, Triangle
+  - The main class must be org.shapes.ShapeCalculator
+  - Compile the class files into the directory bin/ (use javac -d bin)
+  - Create the bin/ directory before compiling if it does not exist yet
+
+  Please create the Java source files, compile them, and verify with test shapes.
+time: 7
+difficulty: 3.0
