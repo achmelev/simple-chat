@@ -294,6 +294,9 @@ def stream_chat(messages, cfg, tool_registry, time_limit_seconds=None, start_tim
         extra["temperature"] = cfg.get("temperature")
     if "top_p" in cfg:
         extra["top_p"] = cfg.get("top_p")
+    if "max_completion_tokens" in cfg:
+        extra["max_tokens"] = cfg.get("max_completion_tokens")
+        extra["max_completion_tokens"] = cfg.get("max_completion_tokens")
     if "extra_headers" in cfg:
         extra["extra_headers"] = cfg.get("extra_headers")
     if "extra_query" in cfg:

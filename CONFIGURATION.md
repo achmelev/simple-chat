@@ -21,6 +21,7 @@ The connection keys `llm_url`, `api_key`, and `model` must also be provided, eit
 | `reasoning_effort` | string | _(omit)_ | Reasoning budget passed to the model: `"low"`, `"medium"`, or `"high"`. Omit for models that do not support it. |
 | `temperature` | number | _(omit)_ | Sampling temperature passed to the model. Omit to use the provider's default. |
 | `top_p` | number | _(omit)_ | Nucleus sampling probability mass passed to the model. Omit to use the provider's default. |
+| `max_completion_tokens` | integer | _(omit)_ | Maximum number of completion tokens to generate. Sent to the API as both `max_completion_tokens` and the legacy `max_tokens`, for compatibility with providers that only recognize one or the other. |
 | `extra_headers` | map | _(omit)_ | Additional HTTP headers passed through to the API request. |
 | `extra_query` | map | _(omit)_ | Additional query string parameters passed through to the API request. |
 | `extra_body` | map | _(omit)_ | Additional fields merged into the JSON request body. |
