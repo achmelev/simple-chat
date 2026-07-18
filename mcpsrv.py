@@ -24,6 +24,7 @@ except ImportError:
 from tools.python_exec_tool import PythonExecTool
 from tools.write_file_tool import WriteFileTool
 from tools.edit_file_tool import EditFileTool
+from tools.read_file_tool import ReadFileTool
 from tools.registry import ToolRegistry
 
 
@@ -39,6 +40,7 @@ def build_tool_registry(cfg):
         PythonExecTool(),
         WriteFileTool(cfg.get("target")),
         EditFileTool(cfg.get("target")),
+        ReadFileTool(),
     ]
     return ToolRegistry(
         all_tools=all_tools,

@@ -36,6 +36,7 @@ tools:
   - execute_python
   - write_file
   - edit_file
+  - read_file
   - mvn           # a command tool defined under command_tools
 ```
 
@@ -46,6 +47,7 @@ Built-in tool names:
 | `execute_python` | Executes Python code in an isolated venv; supports installing packages |
 | `write_file` | Writes text to a file (creates or overwrites) |
 | `edit_file` | Edits a file by exact-string replacement |
+| `read_file` | Reads a file and returns its text content |
 
 ### `command_tools`
 
@@ -169,6 +171,7 @@ tools:
   - execute_python
   - write_file
   - edit_file
+  - read_file
   - mvn
 
 command_tools:
