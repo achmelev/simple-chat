@@ -294,6 +294,12 @@ def stream_chat(messages, cfg, tool_registry, time_limit_seconds=None, start_tim
         extra["temperature"] = cfg.get("temperature")
     if "top_p" in cfg:
         extra["top_p"] = cfg.get("top_p")
+    if "extra_headers" in cfg:
+        extra["extra_headers"] = cfg.get("extra_headers")
+    if "extra_query" in cfg:
+        extra["extra_query"] = cfg.get("extra_query")
+    if "extra_body" in cfg:
+        extra["extra_body"] = cfg.get("extra_body")
     response = client.chat.completions.create(
         model=cfg.get("model"),
         messages=messages,
