@@ -5,9 +5,7 @@ command_tools:
   - binary: /bin/ls
     description: "Executes the ls command"
   - binary: /usr/bin/grep
-    description: "Executes the grep utility"    
-  - binary: /usr/bin/cat
-    description: "Executes the cat utility"    
+    description: "Executes the grep utility"
   - binary: /usr/bin/mkdir
     description: "Executes the mkdir command"          
   - binary: /opt/java/openjdk/bin/java
@@ -21,8 +19,8 @@ tools:
   - pwd
   - ls
   - grep
-  - cat
   - mkdir
+  - read_file
   - write_file
   - edit_file
   - java
