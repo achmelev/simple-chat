@@ -23,10 +23,14 @@ Interactive commands during a session: `/quit`, `/reset`.
 
 **Conversation loop** (`chat.py`):
 1. Collect user input (multi-line, terminated by empty line)
-2. Stream LLM response token-by-token via OpenAI SDK
-3. Reconstruct the full message from delta chunks (`reconstruct_chat_completion`)
-4. If `finish_reason == tool_calls`: execute tools, append results, continue loop
-5. If `finish_reason == stop/length`: wait for next user input
+2. Stream the LLM response via an `LLMClient` (see below), which returns a reconstructed message dict
+3. If `finish_reason == tool_calls`: execute tools, append results, continue loop
+4. If `finish_reason == stop/length`: wait for next user input
+
+**LLM client** (`llm/`):
+- `base.py` — abstract `LLMClient` class with a single method, `stream_chat(messages, cfg, tool_registry, time_limit_seconds=None, start_time=None, session_storage=None)`, returning a reconstructed message dict (`id`, `role`, `content`, `reasoning_content`, `tool_calls`, `function_call`, `finish_reason`, `tool_call_token`, `error_message`, `timed_out`); also defines `ResponseValidationError`
+- `openai_client.py` — `OpenAIChatClient`, the only implementation today; builds the OpenAI SDK request (including all optional sampling/extra parameters from config), streams the response, and reconstructs the message from delta chunks token-by-token
+- To support a different provider API, implement `LLMClient` in a new module and swap the `OpenAIChatClient()` instantiation in `chat.py`'s `main()`
 
 **Tool system** (`tools/`):
 - `base.py` — abstract `Tool` class; subclasses implement `name()`, `description()`, `parameters()`, `execute(arguments)`

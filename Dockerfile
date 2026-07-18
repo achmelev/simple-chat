@@ -24,6 +24,9 @@ COPY requirements.txt /opt/simplechat/
 COPY chat.py           /opt/simplechat/
 COPY mcpsrv.py         /opt/simplechat/
 COPY llmrespoutput.py  /opt/simplechat/
+COPY llm/__init__.py            /opt/simplechat/llm/
+COPY llm/base.py                /opt/simplechat/llm/
+COPY llm/openai_client.py       /opt/simplechat/llm/
 COPY tools/__init__.py            /opt/simplechat/tools/
 COPY tools/base.py                /opt/simplechat/tools/
 COPY tools/registry.py            /opt/simplechat/tools/
