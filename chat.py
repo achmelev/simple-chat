@@ -288,23 +288,19 @@ def stream_chat(messages, cfg, tool_registry, time_limit_seconds=None, start_tim
     # Request a streaming response using the new SDK syntax.
     openai_tools = tool_registry.get_openai_tools()
     extra = {"tools": openai_tools} if openai_tools else {}
-    if ("reasoning_effort" in cfg):
-        response = client.chat.completions.create(
-            model=cfg.get("model"),
-            messages=messages,
-            stream=True,
-            n=1,
-            reasoning_effort=cfg.get("reasoning_effort"),
-            **extra
-        )
-    else:
-        response = client.chat.completions.create(
-            model=cfg.get("model"),
-            messages=messages,
-            stream=True,
-            n=1,
-            **extra
-        )
+    if "reasoning_effort" in cfg:
+        extra["reasoning_effort"] = cfg.get("reasoning_effort")
+    if "temperature" in cfg:
+        extra["temperature"] = cfg.get("temperature")
+    if "top_p" in cfg:
+        extra["top_p"] = cfg.get("top_p")
+    response = client.chat.completions.create(
+        model=cfg.get("model"),
+        messages=messages,
+        stream=True,
+        n=1,
+        **extra
+    )
 
     output = LLMResponseOutput(cfg)
 

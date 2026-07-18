@@ -19,6 +19,8 @@ The connection keys `llm_url`, `api_key`, and `model` must also be provided, eit
 | Key | Type | Default | Description |
 |-----|------|---------|-------------|
 | `reasoning_effort` | string | _(omit)_ | Reasoning budget passed to the model: `"low"`, `"medium"`, or `"high"`. Omit for models that do not support it. |
+| `temperature` | number | _(omit)_ | Sampling temperature passed to the model. Omit to use the provider's default. |
+| `top_p` | number | _(omit)_ | Nucleus sampling probability mass passed to the model. Omit to use the provider's default. |
 | `reasoning_field` | string | `"reasoning_content"` | Name of the field in the streaming delta that carries reasoning/thinking tokens. Change only if your provider uses a non-standard field name. |
 | `use_finish_reason` | boolean | `true` | When `true`, the finish reason from the API response is used to detect tool calls and end-of-turn. Set to `false` for providers that omit or misreport `finish_reason`. |
 | `ssl_verify` | boolean | `true` | Set to `false` to disable SSL certificate verification. Useful for local endpoints with self-signed certificates. |
