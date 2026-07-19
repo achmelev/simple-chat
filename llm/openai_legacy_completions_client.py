@@ -29,17 +29,29 @@ class OpenAILegacyCompletionsClient(LLMClient):
     def _collect_logprobs(self, logprobs, collected):
         if not logprobs:
             return
-        for token, logprob in zip(logprobs.tokens or [], logprobs.token_logprobs or []):
-            collected.append((token, logprob))
+        tokens = logprobs.tokens or []
+        token_logprobs = logprobs.token_logprobs or []
+        top_logprobs = logprobs.top_logprobs or []
+        for i, token in enumerate(tokens):
+            logprob = token_logprobs[i] if i < len(token_logprobs) else None
+            alternatives = top_logprobs[i] if i < len(top_logprobs) else None
+            collected.append((token, logprob, alternatives))
 
     def _print_logprobs(self, collected):
         if not collected:
             return
         print("\n--- Token probabilities ---")
-        for token, logprob in collected:
-            if logprob is None:
-                continue
-            print(f"[prob] {token!r}: {math.exp(logprob):.4f}")
+        for token, logprob, alternatives in collected:
+            prob_str = f"{math.exp(logprob):.4f}" if logprob is not None else "n/a"
+            line = f"[prob] {token!r}: {prob_str}"
+            if alternatives:
+                ranked = sorted(alternatives.items(), key=lambda kv: kv[1], reverse=True)
+                alt_str = ", ".join(
+                    f"{'*' if alt_token == token else ''}{alt_token!r}: {math.exp(alt_logprob):.4f}"
+                    for alt_token, alt_logprob in ranked
+                )
+                line += f"  [{alt_str}]"
+            print(line)
         print("--- End of token probabilities ---")
 
     def _reconstruct_completion(self, message, chunk, cfg, collected_logprobs=None):
@@ -112,8 +124,11 @@ class OpenAILegacyCompletionsClient(LLMClient):
             extra["extra_body"] = cfg.get("extra_body")
         if "echo" in cfg:
             extra["echo"] = cfg.get("echo")
-        if cfg.get("logprobs"):
-            extra["logprobs"] = 1
+        logprobs_n = cfg.get("logprobs")
+        if logprobs_n:
+            # Backward-compat: `logprobs: true` (old boolean-only config) means "top 1".
+            logprobs_n = 1 if isinstance(logprobs_n, bool) else int(logprobs_n)
+            extra["logprobs"] = logprobs_n
 
         response = client.completions.create(
             model=cfg.get("model"),
@@ -124,7 +139,7 @@ class OpenAILegacyCompletionsClient(LLMClient):
         )
 
         output = LLMResponseOutput(cfg)
-        collected_logprobs = [] if cfg.get("logprobs") else None
+        collected_logprobs = [] if logprobs_n else None
 
         for chunk in response:
             if chunk.id is None:

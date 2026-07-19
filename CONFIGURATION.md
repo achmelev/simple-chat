@@ -24,7 +24,7 @@ The connection keys `llm_url`, `api_key`, and `model` must also be provided, eit
 | `top_p` | number | _(omit)_ | Nucleus sampling probability mass passed to the model. Omit to use the provider's default. |
 | `max_completion_tokens` | integer | _(omit)_ | Maximum number of completion tokens to generate. With `"chat_completions"`, sent as both `max_completion_tokens` and the legacy `max_tokens`, for compatibility with providers that only recognize one or the other; with `"legacy_completions"`, sent as `max_tokens` only. |
 | `echo` | boolean | _(omit)_ | `"legacy_completions"` only. When `true`, the API echoes the prompt back before the generated continuation. Note: the echoed prompt is not stripped out, so it becomes part of the stored assistant message and gets fed back into the prompt on the next turn. |
-| `logprobs` | boolean | `false` | `"legacy_completions"` only. When `true`, requests log probabilities (`logprobs=1`) from the API and prints each token's log probability to the terminal as it streams in. |
+| `logprobs` | integer | _(omit)_ | `"legacy_completions"` only. When set to N (1-5), requests the top N candidate tokens' probabilities at each position from the API, in addition to the probability of the token actually produced. Once the response finishes, prints each output token's probability followed by its ranked alternatives (the one actually chosen is marked `*`). `true` is still accepted for backward compatibility and is treated as `1`. |
 | `extra_headers` | map | _(omit)_ | Additional HTTP headers passed through to the API request. |
 | `extra_query` | map | _(omit)_ | Additional query string parameters passed through to the API request. |
 | `extra_body` | map | _(omit)_ | Additional fields merged into the JSON request body. |
