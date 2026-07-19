@@ -181,6 +181,11 @@ def main() -> None:
     ])
     command_registry.add(HelpCommand(command_registry))
 
+    # In legacy_completions mode there is no chat memory: each turn is sent to the
+    # API on its own, with no system message, so the conversation is reset to just
+    # the new user input before every call.
+    single_turn_mode = cfg.get("api_type") == "legacy_completions"
+
     user_conversation = True
     while True:
         if user_conversation:
@@ -191,6 +196,8 @@ def main() -> None:
                     if result.output:
                         print(result.output)
                     if result.user_message:
+                        if single_turn_mode:
+                            conversation.clear()
                         conversation.append({"role": "user", "content": result.user_message})
                     elif not result.send_to_llm:
                         continue
@@ -202,6 +209,8 @@ def main() -> None:
                 # Empty input – just continue prompting.
                 continue
             else:
+                if single_turn_mode:
+                    conversation.clear()
                 conversation.append({"role": "user", "content": user_input})
         # Stream assistant response.
         gotError = False

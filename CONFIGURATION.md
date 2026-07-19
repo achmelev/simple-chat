@@ -18,7 +18,7 @@ The connection keys `llm_url`, `api_key`, and `model` must also be provided, eit
 
 | Key | Type | Default | Description |
 |-----|------|---------|-------------|
-| `api_type` | string | `"chat_completions"` | Which OpenAI-compatible API to call: `"chat_completions"` (the `/chat/completions` endpoint, with roles, tool calling, and reasoning) or `"legacy_completions"` (the plain text-in/text-out `/completions` endpoint — no tool calling or reasoning support). |
+| `api_type` | string | `"chat_completions"` | Which OpenAI-compatible API to call: `"chat_completions"` (the `/chat/completions` endpoint, with roles, tool calling, and reasoning) or `"legacy_completions"` (the plain text-in/text-out `/completions` endpoint — no tool calling or reasoning support). `"legacy_completions"` is single-turn: there is no chat memory — each request only contains the current user input, with no system message and no prior conversation history. |
 | `reasoning_effort` | string | _(omit)_ | Reasoning budget passed to the model: `"low"`, `"medium"`, or `"high"`. Omit for models that do not support it. Ignored by `"legacy_completions"`. |
 | `temperature` | number | _(omit)_ | Sampling temperature passed to the model. Omit to use the provider's default. |
 | `top_p` | number | _(omit)_ | Nucleus sampling probability mass passed to the model. Omit to use the provider's default. |
