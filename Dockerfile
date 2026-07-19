@@ -27,6 +27,8 @@ COPY llmrespoutput.py  /opt/simplechat/
 COPY llm/__init__.py            /opt/simplechat/llm/
 COPY llm/base.py                /opt/simplechat/llm/
 COPY llm/openai_client.py       /opt/simplechat/llm/
+COPY llm/openai_legacy_completions_client.py /opt/simplechat/llm/
+COPY llm/factory.py             /opt/simplechat/llm/
 COPY tools/__init__.py            /opt/simplechat/tools/
 COPY tools/base.py                /opt/simplechat/tools/
 COPY tools/registry.py            /opt/simplechat/tools/

@@ -18,14 +18,17 @@ The connection keys `llm_url`, `api_key`, and `model` must also be provided, eit
 
 | Key | Type | Default | Description |
 |-----|------|---------|-------------|
-| `reasoning_effort` | string | _(omit)_ | Reasoning budget passed to the model: `"low"`, `"medium"`, or `"high"`. Omit for models that do not support it. |
+| `api_type` | string | `"chat_completions"` | Which OpenAI-compatible API to call: `"chat_completions"` (the `/chat/completions` endpoint, with roles, tool calling, and reasoning) or `"legacy_completions"` (the plain text-in/text-out `/completions` endpoint — no tool calling or reasoning support). |
+| `reasoning_effort` | string | _(omit)_ | Reasoning budget passed to the model: `"low"`, `"medium"`, or `"high"`. Omit for models that do not support it. Ignored by `"legacy_completions"`. |
 | `temperature` | number | _(omit)_ | Sampling temperature passed to the model. Omit to use the provider's default. |
 | `top_p` | number | _(omit)_ | Nucleus sampling probability mass passed to the model. Omit to use the provider's default. |
-| `max_completion_tokens` | integer | _(omit)_ | Maximum number of completion tokens to generate. Sent to the API as both `max_completion_tokens` and the legacy `max_tokens`, for compatibility with providers that only recognize one or the other. |
+| `max_completion_tokens` | integer | _(omit)_ | Maximum number of completion tokens to generate. With `"chat_completions"`, sent as both `max_completion_tokens` and the legacy `max_tokens`, for compatibility with providers that only recognize one or the other; with `"legacy_completions"`, sent as `max_tokens` only. |
+| `echo` | boolean | _(omit)_ | `"legacy_completions"` only. When `true`, the API echoes the prompt back before the generated continuation. Note: the echoed prompt is not stripped out, so it becomes part of the stored assistant message and gets fed back into the prompt on the next turn. |
+| `logprobs` | boolean | `false` | `"legacy_completions"` only. When `true`, requests log probabilities (`logprobs=1`) from the API and prints each token's log probability to the terminal as it streams in. |
 | `extra_headers` | map | _(omit)_ | Additional HTTP headers passed through to the API request. |
 | `extra_query` | map | _(omit)_ | Additional query string parameters passed through to the API request. |
 | `extra_body` | map | _(omit)_ | Additional fields merged into the JSON request body. |
-| `reasoning_field` | string | `"reasoning_content"` | Name of the field in the streaming delta that carries reasoning/thinking tokens. Change only if your provider uses a non-standard field name. |
+| `reasoning_field` | string | `"reasoning_content"` | Name of the field in the streaming delta that carries reasoning/thinking tokens. Change only if your provider uses a non-standard field name. Ignored by `"legacy_completions"`. |
 | `use_finish_reason` | boolean | `true` | When `true`, the finish reason from the API response is used to detect tool calls and end-of-turn. Set to `false` for providers that omit or misreport `finish_reason`. |
 | `ssl_verify` | boolean | `true` | Set to `false` to disable SSL certificate verification. Useful for local endpoints with self-signed certificates. |
 
@@ -36,6 +39,8 @@ The connection keys `llm_url`, `api_key`, and `model` must also be provided, eit
 ### `tools`
 
 A list of tool names to enable for the session. Only listed tools are installed and offered to the model. This list covers both built-in tools and any command-line tools defined under `command_tools`. A warning is printed for any name that does not match a known tool.
+
+Note: with `api_type: legacy_completions` the model is never told about enabled tools (the `/completions` endpoint has no `tools` parameter), so it cannot emit tool calls even if tools are listed here.
 
 ```yaml
 tools:

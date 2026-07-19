@@ -29,8 +29,10 @@ Interactive commands during a session: `/quit`, `/reset`.
 
 **LLM client** (`llm/`):
 - `base.py` — abstract `LLMClient` class with a single method, `stream_chat(messages, cfg, tool_registry, time_limit_seconds=None, start_time=None, session_storage=None)`, returning a reconstructed message dict (`id`, `role`, `content`, `reasoning_content`, `tool_calls`, `function_call`, `finish_reason`, `tool_call_token`, `error_message`, `timed_out`); also defines `ResponseValidationError`
-- `openai_client.py` — `OpenAIChatClient`, the only implementation today; builds the OpenAI SDK request (including all optional sampling/extra parameters from config), streams the response, and reconstructs the message from delta chunks token-by-token
-- To support a different provider API, implement `LLMClient` in a new module and swap the `OpenAIChatClient()` instantiation in `chat.py`'s `main()`
+- `openai_client.py` — `OpenAIChatClient`, calling the OpenAI Chat Completions API (`/chat/completions`); supports roles, tool calling, and reasoning content
+- `openai_legacy_completions_client.py` — `OpenAILegacyCompletionsClient`, calling the legacy text-in/text-out Completions API (`/completions`); flattens the message history into a single prompt string and returns a plain assistant message with no reasoning content and no tool calls (the endpoint has no `tools` parameter)
+- `factory.py` — `create_llm_client(cfg)` picks the implementation based on the config's `api_type` key (default: `chat_completions`; also `legacy_completions`)
+- To support a different provider API, implement `LLMClient` in a new module and register it in `factory.py`
 
 **Tool system** (`tools/`):
 - `base.py` — abstract `Tool` class; subclasses implement `name()`, `description()`, `parameters()`, `execute(arguments)`

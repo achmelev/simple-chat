@@ -24,7 +24,7 @@ from tools.read_file_tool import ReadFileTool
 from tools.edit_file_tool import EditFileTool
 from tools.registry import ToolRegistry
 from llm.base import ResponseValidationError
-from llm.openai_client import OpenAIChatClient
+from llm.factory import create_llm_client
 from commands.quit_command import QuitCommand
 from commands.reset_command import ResetCommand
 from commands.help_command import HelpCommand
@@ -149,7 +149,7 @@ def main() -> None:
         print(f"Failed to load config: {exc}")
         sys.exit(1)
 
-    print("LLM Provider URL = "+cfg.get("llm_url")+", LLM Model = "+cfg.get("model"))    
+    print("LLM Provider URL = "+cfg.get("llm_url")+", LLM Model = "+cfg.get("model")+", API Type = "+cfg.get("api_type", "chat_completions"))
 
     # Initialise the conversation with the system prompt.
     conversation = [{"role": "system", "content": cfg["system_prompt"]}]
@@ -160,7 +160,7 @@ def main() -> None:
     tool_names = cfg.get("tools", None)
     tool_registry = ToolRegistry(all_tools=all_tools, tool_names=tool_names, command_tool_configs=cfg.get("command_tools"), tool_timeout=cfg.get("tool_timeout", 300))
 
-    llm_client = OpenAIChatClient()
+    llm_client = create_llm_client(cfg)
 
     command_registry = CommandRegistry([
         QuitCommand(tool_registry),
